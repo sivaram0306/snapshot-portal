@@ -1,0 +1,302 @@
+/* =========================================================
+   DEDICATED SNAPSHOT REVERT MODULE (revert-snapshot.js)
+   Volume-Filtered Snapshots & Prompt-Based Credentials
+========================================================= */
+
+async function fetchAWSDataForRevert(region, actionType, payload = {}) {
+    if (!window.awsSessionAccessKey || !window.awsSessionSecretKey) {
+        const inputKey = prompt("AWS Access Key ID required. Please enter your Access Key:");
+        if (!inputKey) return [];
+        
+        const inputSecret = prompt("AWS Secret Access Key required. Please enter your Secret Key:");
+        if (!inputSecret) return [];
+
+        const inputToken = prompt("AWS Session Token (Optional - leave blank if using permanent IAM user keys):");
+
+        window.awsSessionAccessKey = inputKey.trim();
+        window.awsSessionSecretKey = inputSecret.trim();
+        window.awsSessionToken = inputToken ? inputToken.trim() : undefined;
+    }
+
+    const credentials = {
+        accessKeyId: window.awsSessionAccessKey,
+        secretAccessKey: window.awsSessionSecretKey,
+        sessionToken: window.awsSessionToken || undefined
+    };
+
+    const EC2Client = window.EC2Client;
+    const DescribeInstancesCommand = window.DescribeInstancesCommand;
+    const DescribeVolumesCommand = window.DescribeVolumesCommand;
+    const DescribeSnapshotsCommand = window.DescribeSnapshotsCommand;
+
+    if (!EC2Client || !DescribeInstancesCommand) {
+        console.error("AWS SDK EC2 classes not found on window scope. Check index.html module CDN imports.");
+        alert("AWS SDK failed to initialize. Please verify your script imports.");
+        return [];
+    }
+
+    const ec2Client = new EC2Client({
+        region: region,
+        credentials: credentials
+    });
+
+    try {
+        if (actionType === 'instances') {
+            const command = new DescribeInstancesCommand({});
+            const response = await ec2Client.send(command);
+            const instances = [];
+            
+            response.Reservations?.forEach(reservation => {
+                reservation.Instances?.forEach(inst => {
+                    const nameTag = inst.Tags?.find(t => t.Key === 'Name');
+                    instances.push({
+                        id: inst.InstanceId,
+                        name: nameTag ? nameTag.Value : 'Unnamed Instance',
+                        state: inst.State.Name,
+                        az: inst.Placement?.AvailabilityZone || `${region}a`
+                    });
+                });
+            });
+            return instances;
+        }
+
+        if (actionType === 'volumes') {
+            if (!payload.instanceId) return [];
+            const command = new DescribeVolumesCommand({
+                Filters: [{ Name: 'attachment.instance-id', Values: [payload.instanceId] }]
+            });
+            const response = await ec2Client.send(command);
+            return response.Volumes?.map(vol => ({
+                id: vol.VolumeId,
+                device: vol.Attachments?.[0]?.Device || '/dev/xvda',
+                size: `${vol.Size} GiB`,
+                status: vol.State,
+                availabilityZone: vol.AvailabilityZone
+            })) || [];
+        }
+
+        if (actionType === 'snapshots') {
+            if (!payload.volumeId) return [];
+            // Filter snapshots strictly by the selected source volume ID instead of scanning all snapshots
+            const command = new DescribeSnapshotsCommand({
+                OwnerIds: ['self'],
+                Filters: [
+                    { Name: 'volume-id', Values: [payload.volumeId] }
+                ]
+            });
+            const response = await ec2Client.send(command);
+            return response.Snapshots?.map(snap => ({
+                id: snap.SnapshotId,
+                desc: snap.Description || 'No description',
+                size: `${snap.VolumeSize} GiB`,
+                date: snap.StartTime ? snap.StartTime.toISOString().split('T')[0] : ''
+            })) || [];
+        }
+
+        return [];
+    } catch (error) {
+        console.error(`AWS API Direct Error (${actionType}):`, error);
+        if (['InvalidClientTokenId', 'UnrecognizedClientException', 'AccessDenied', 'ExpiredToken'].includes(error.name)) {
+            window.awsSessionAccessKey = null;
+            window.awsSessionSecretKey = null;
+            window.awsSessionToken = null;
+        }
+        alert(`AWS Error: ${error.message}`);
+        return [];
+    }
+}
+
+function initRevertSnapshotModule() {
+    console.log("Revert Snapshot module initialized.");
+    const regionSelect = document.getElementById('restore-region-select');
+    const instanceSelect = document.getElementById('restore-instance-select');
+    const volumeSelect = document.getElementById('restore-volume-select');
+    const snapshotSelect = document.getElementById('restore-snapshot-select');
+    const restoreButton = document.getElementById('restore-snapshot-button');
+    const refreshButton = document.getElementById('refresh-revert-data');
+
+    const regionStatus = document.getElementById('restore-region-status');
+    const instanceStatus = document.getElementById('restore-instance-status');
+    const volumeStatus = document.getElementById('restore-volume-status');
+    const snapshotStatus = document.getElementById('restore-snapshot-status');
+
+    const summaryRegion = document.getElementById('restore-summary-region');
+    const summaryInstance = document.getElementById('restore-summary-instance');
+    const summaryOldVolume = document.getElementById('restore-summary-old-volume');
+    const summarySnapshot = document.getElementById('restore-summary-snapshot');
+    const summaryDevice = document.getElementById('restore-summary-device');
+
+    const step1 = regionSelect?.closest('.restore-step');
+    const step2 = instanceSelect?.closest('.restore-step');
+    const step3 = volumeSelect?.closest('.restore-step');
+    const step4 = snapshotSelect?.closest('.restore-step');
+
+    if (!regionSelect) return;
+
+    let selectedState = { region: '', instance: null, volume: null, snapshot: null };
+
+    function updateStatus(element, text, className) {
+        if (!element) return;
+        element.textContent = text;
+        element.className = `step-status ${className}`;
+    }
+
+    function setActiveStep(activeNum) {
+        [step1, step2, step3, step4].forEach((step, idx) => {
+            if (!step) return;
+            if (idx + 1 === activeNum) step.classList.add('active');
+            else step.classList.remove('active');
+        });
+    }
+
+    regionSelect.addEventListener('change', async (e) => {
+        const region = e.target.value;
+        selectedState.region = region;
+        if (summaryRegion) summaryRegion.textContent = region || '-';
+
+        instanceSelect.innerHTML = '<option value="">Select an instance</option>';
+        volumeSelect.innerHTML = '<option value="">Select a volume</option>';
+        snapshotSelect.innerHTML = '<option value="">Select a snapshot</option>';
+        
+        instanceSelect.disabled = !region;
+        volumeSelect.disabled = true;
+        snapshotSelect.disabled = true;
+        if (restoreButton) restoreButton.disabled = true;
+
+        if (region) {
+            updateStatus(regionStatus, 'Selected', 'success');
+            setActiveStep(2);
+            updateStatus(instanceStatus, 'Loading...', 'waiting');
+
+            const instances = await fetchAWSDataForRevert(region, 'instances');
+            instanceSelect.innerHTML = '<option value="">Select an instance</option>';
+            instances.forEach(inst => {
+                const opt = document.createElement('option');
+                opt.value = inst.id;
+                opt.textContent = `${inst.name} (${inst.id}) - [${inst.state}]`;
+                opt.dataset.state = inst.state;
+                opt.dataset.az = inst.az;
+                instanceSelect.appendChild(opt);
+            });
+            updateStatus(instanceStatus, 'Required', 'required');
+        } else {
+            updateStatus(regionStatus, 'Required', 'required');
+            setActiveStep(1);
+            updateStatus(instanceStatus, 'Waiting', 'waiting');
+        }
+    });
+
+    instanceSelect.addEventListener('change', async (e) => {
+        const instanceId = e.target.value;
+        const selectedOption = e.target.selectedOptions[0];
+        const region = selectedState.region;
+
+        selectedState.instance = instanceId ? { id: instanceId, state: selectedOption?.dataset.state, az: selectedOption?.dataset.az } : null;
+        if (summaryInstance) summaryInstance.textContent = instanceId || '-';
+
+        volumeSelect.innerHTML = '<option value="">Select a volume</option>';
+        snapshotSelect.innerHTML = '<option value="">Select a snapshot</option>';
+        volumeSelect.disabled = !instanceId;
+        snapshotSelect.disabled = true;
+        if (restoreButton) restoreButton.disabled = true;
+
+        if (instanceId) {
+            updateStatus(instanceStatus, 'Selected', 'success');
+            setActiveStep(3);
+            updateStatus(volumeStatus, 'Loading...', 'waiting');
+
+            // Only fetch volumes attached to this specific instance first
+            const volumes = await fetchAWSDataForRevert(region, 'volumes', { instanceId });
+
+            volumeSelect.innerHTML = '<option value="">Select a volume</option>';
+            volumes.forEach(vol => {
+                const opt = document.createElement('option');
+                opt.value = vol.id;
+                opt.textContent = `${vol.id} (${vol.device} - ${vol.size})`;
+                opt.dataset.device = vol.device;
+                opt.dataset.az = vol.availabilityZone;
+                volumeSelect.appendChild(opt);
+            });
+            updateStatus(volumeStatus, 'Required', 'required');
+        } else {
+            updateStatus(instanceStatus, 'Required', 'required');
+            setActiveStep(2);
+            updateStatus(volumeStatus, 'Waiting', 'waiting');
+        }
+    });
+
+    volumeSelect.addEventListener('change', async (e) => {
+        const volumeId = e.target.value;
+        const selectedOption = e.target.selectedOptions[0];
+        const deviceName = selectedOption ? selectedOption.dataset.device : '';
+        const region = selectedState.region;
+
+        selectedState.volume = volumeId ? { id: volumeId, device: deviceName } : null;
+        if (summaryOldVolume) summaryOldVolume.textContent = volumeId || '-';
+        if (summaryDevice) summaryDevice.textContent = deviceName || '-';
+
+        snapshotSelect.innerHTML = '<option value="">Select a snapshot</option>';
+        snapshotSelect.disabled = !volumeId;
+        if (restoreButton) restoreButton.disabled = true;
+
+        if (volumeId) {
+            updateStatus(volumeStatus, 'Selected', 'success');
+            setActiveStep(4);
+            updateStatus(snapshotStatus, 'Loading...', 'waiting');
+
+            // Fetch snapshots tied exclusively to the chosen volume ID
+            const snapshots = await fetchAWSDataForRevert(region, 'snapshots', { volumeId });
+
+            snapshotSelect.innerHTML = '<option value="">Select a snapshot</option>';
+            snapshots.forEach(snap => {
+                const opt = document.createElement('option');
+                opt.value = snap.id;
+                opt.textContent = `${snap.id} - ${snap.desc} (${snap.size})`;
+                snapshotSelect.appendChild(opt);
+            });
+            updateStatus(snapshotStatus, 'Required', 'required');
+        } else {
+            updateStatus(volumeStatus, 'Required', 'required');
+            setActiveStep(3);
+            updateStatus(snapshotStatus, 'Waiting', 'waiting');
+        }
+    });
+
+    snapshotSelect.addEventListener('change', (e) => {
+        const snapshotId = e.target.value;
+        selectedState.snapshot = snapshotId || null;
+        if (summarySnapshot) summarySnapshot.textContent = snapshotId || '-';
+
+        if (snapshotId) {
+            updateStatus(snapshotStatus, 'Selected', 'success');
+            if (restoreButton) restoreButton.disabled = false;
+        } else {
+            updateStatus(snapshotStatus, 'Required', 'required');
+            if (restoreButton) restoreButton.disabled = true;
+        }
+    });
+
+    if (refreshButton) {
+        refreshButton.addEventListener('click', () => {
+            if (regionSelect.value) regionSelect.dispatchEvent(new Event('change'));
+        });
+    }
+}
+
+function loadInstancesForRevert() {
+    initRevertSnapshotModule();
+}
+
+function resetRevertState() {
+    const regionSelect = document.getElementById('restore-region-select');
+    if (regionSelect) {
+        regionSelect.value = '';
+        regionSelect.dispatchEvent(new Event('change'));
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('restore-region-select')) {
+        initRevertSnapshotModule();
+    }
+});

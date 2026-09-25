@@ -1,0 +1,3405 @@
+"use strict";
+
+/* =========================================================
+   STATE
+========================================================= */
+
+const state = {
+    accounts: [],
+    activeAccountId: null,
+
+    instances: [],
+    volumes: [],
+    snapshots: [],
+
+    currentPage: "dashboard",
+
+    snapshotDashboardTimer: null,
+    snapshotPollingTimer: null,
+
+    editingAccountId: null
+};
+
+const MAX_INSTANCE_STORAGE_GB = 2048;
+
+const AWS_AUTH_ERROR_CODES = [
+    "ExpiredToken",
+    "ExpiredTokenException",
+    "InvalidClientTokenId",
+    "UnrecognizedClientException",
+    "InvalidAccessKeyId",
+    "SignatureDoesNotMatch"
+];
+
+const SNAPSHOT_POLL_INTERVAL = 15000;
+const SNAPSHOT_DASHBOARD_POLL_INTERVAL = 15000;
+
+
+/* =========================================================
+   DOM
+========================================================= */
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function formatDate(value) {
+
+    if (!value) {
+        return "-";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return String(value);
+    }
+
+    return date.toLocaleString();
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+let toastTimer = null;
+
+function toast(message, type = "info") {
+
+    const element = $("toast");
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent = message;
+    element.className = `toast ${type} show`;
+
+    clearTimeout(toastTimer);
+
+    toastTimer = setTimeout(() => {
+        element.classList.remove("show");
+    }, 3500);
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+function setLoading(visible, message = "Loading...") {
+
+    const loading = $("loading");
+    const text = $("loading-text");
+
+    if (!loading) {
+        return;
+    }
+
+    if (text) {
+        text.textContent = message;
+    }
+
+    loading.classList.toggle("show", visible);
+}
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function saveAccounts() {
+
+    sessionStorage.setItem(
+        "awsSnapshotAccounts",
+        JSON.stringify(state.accounts)
+    );
+
+    sessionStorage.setItem(
+        "awsSnapshotActiveAccount",
+        state.activeAccountId || ""
+    );
+}
+
+function loadAccounts() {
+
+    try {
+
+        const raw = sessionStorage.getItem(
+            "awsSnapshotAccounts"
+        );
+
+        state.accounts = raw
+            ? JSON.parse(raw)
+            : [];
+
+        state.activeAccountId =
+            sessionStorage.getItem(
+                "awsSnapshotActiveAccount"
+            ) || null;
+
+        if (
+            state.activeAccountId &&
+            !state.accounts.some(
+                account =>
+                    account.id === state.activeAccountId
+            )
+        ) {
+
+            state.activeAccountId =
+                state.accounts[0]?.id || null;
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        state.accounts = [];
+        state.activeAccountId = null;
+    }
+}
+
+
+/* =========================================================
+   ACCOUNT
+========================================================= */
+
+function getActiveAccount() {
+
+    return state.accounts.find(
+        account =>
+            account.id === state.activeAccountId
+    );
+}
+
+function updateAccountSelector() {
+
+    const select = $("account-select");
+
+    if (!select) {
+        return;
+    }
+
+    select.innerHTML = "";
+
+    if (!state.accounts.length) {
+
+        select.innerHTML =
+            `<option value="">No account connected</option>`;
+
+        return;
+    }
+
+    state.accounts.forEach(account => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = account.id;
+
+        option.textContent =
+            `${account.name}`;
+
+        option.selected =
+            account.id === state.activeAccountId;
+
+        select.appendChild(option);
+    });
+}
+
+
+/* =========================================================
+   REGION
+========================================================= */
+
+function updateRegionFromAccount() {
+
+    const account = getActiveAccount();
+
+    const region = $("region");
+
+    const accountRegion =
+        $("account-region");
+
+    if (!account) {
+
+        if (region) {
+            region.value = "us-west-1";
+        }
+
+        return;
+    }
+
+    const selectedRegion =
+        account.region || "us-west-1";
+
+    if (region) {
+        region.value = selectedRegion;
+    }
+
+    if (accountRegion) {
+        accountRegion.value = selectedRegion;
+    }
+}
+
+function updateSelectedAccountUI() {
+
+    const account = getActiveAccount();
+
+    const status = $("connection-status");
+
+    const dashboardAccount =
+        $("dashboard-selected-account");
+
+    const dashboardRegion =
+        $("dashboard-selected-region");
+
+    const summaryAccount =
+        $("summary-account-name");
+
+    const summaryRegion =
+        $("summary-region");
+
+    const summaryStatus =
+        $("summary-account-status");
+
+    if (!account) {
+
+        if (dashboardAccount) {
+            dashboardAccount.textContent =
+                "No account selected";
+        }
+
+        if (dashboardRegion) {
+            dashboardRegion.textContent = "-";
+        }
+
+        if (summaryAccount) {
+            summaryAccount.textContent = "-";
+        }
+
+        if (summaryRegion) {
+            summaryRegion.textContent = "-";
+        }
+
+        if (summaryStatus) {
+            summaryStatus.textContent =
+                "Not connected";
+        }
+
+        if (status) {
+
+            status.textContent =
+                "Not connected";
+
+            status.className =
+                "connection-status";
+        }
+
+        return;
+    }
+
+    const region =
+        account.region || "us-west-1";
+
+    if (dashboardAccount) {
+        dashboardAccount.textContent =
+            account.name;
+    }
+
+    if (dashboardRegion) {
+        dashboardRegion.textContent =
+            region;
+    }
+
+    if (summaryAccount) {
+        summaryAccount.textContent =
+            account.name;
+    }
+
+    if (summaryRegion) {
+        summaryRegion.textContent =
+            region;
+    }
+
+    if (summaryStatus) {
+        summaryStatus.textContent =
+            "Connected";
+    }
+
+    if (status) {
+
+        status.textContent =
+            `Connected: ${account.name}`;
+
+        status.className =
+            "connection-status connected";
+    }
+}
+
+function regionChanged() {
+
+    const account = getActiveAccount();
+
+    const region = $("region");
+
+    if (!account || !region) {
+        return;
+    }
+
+    account.region =
+        region.value;
+
+    saveAccounts();
+
+    updateAccountSelector();
+    updateRegionFromAccount();
+    updateSelectedAccountUI();
+
+    clearAwsData();
+
+    if (state.currentPage === "dashboard") {
+        loadDashboard();
+    }
+
+    if (state.currentPage === "snapshots") {
+        loadSnapshots();
+    }
+
+    if (state.currentPage === "create-snapshot") {
+        loadInstancesForSnapshot();
+    }
+
+    toast(
+        `Region changed to ${account.region}.`,
+        "success"
+    );
+}
+
+
+/* =========================================================
+   REQUEST
+========================================================= */
+
+function getRequestBody() {
+
+    const account = getActiveAccount();
+
+    if (!account) {
+        throw new Error(
+            "Please add and select an AWS account first."
+        );
+    }
+
+    const region =
+        account.region ||
+        $("region")?.value ||
+        "us-west-1";
+
+    return {
+
+        accessKeyId:
+            account.accessKeyId,
+
+        secretAccessKey:
+            account.secretAccessKey,
+
+        sessionToken:
+            account.sessionToken || "",
+
+        region,
+
+        accountName:
+            account.name
+    };
+}
+
+
+/* =========================================================
+   AWS AUTH
+========================================================= */
+
+function isAwsAuthenticationError(data) {
+
+    if (!data) {
+        return false;
+    }
+
+    const code =
+        data.code ||
+        data.errorCode ||
+        data.awsCode ||
+        data.awsError?.code ||
+        data.error?.code ||
+        "";
+
+    const message =
+        typeof data.error === "string"
+            ? data.error
+            : (
+                data.message ||
+                data.error?.message ||
+                ""
+            );
+
+    if (
+        AWS_AUTH_ERROR_CODES.includes(code)
+    ) {
+        return true;
+    }
+
+    return /ExpiredToken|InvalidClientTokenId|UnrecognizedClient|InvalidAccessKeyId|SignatureDoesNotMatch/i
+        .test(String(message));
+}
+
+let credentialPopupOpening = false;
+
+function openCredentialsForAwsError() {
+
+    if (credentialPopupOpening) {
+        return;
+    }
+
+    credentialPopupOpening = true;
+
+    renderAccountList();
+
+    $("credential-modal")
+        ?.classList.add("show");
+
+    setTimeout(() => {
+        credentialPopupOpening = false;
+    }, 500);
+
+    toast(
+        "AWS credentials expired or are invalid. Update the existing account credentials.",
+        "error"
+    );
+}
+
+
+/* =========================================================
+   API
+========================================================= */
+
+async function api(url, options = {}) {
+
+    const config = {
+        ...options,
+
+        headers: {
+            ...(options.body
+                ? {
+                    "Content-Type":
+                        "application/json"
+                }
+                : {}),
+
+            ...(options.headers || {})
+        }
+    };
+
+    let response;
+
+    try {
+
+        response =
+            await fetch(url, config);
+
+    } catch (error) {
+
+        console.error(error);
+
+        throw new Error(
+            "Unable to connect to the server."
+        );
+    }
+
+    let data;
+
+    try {
+
+        data = await response.json();
+
+    } catch {
+
+        throw new Error(
+            `Server returned HTTP ${response.status}`
+        );
+    }
+
+    if (isAwsAuthenticationError(data)) {
+
+        openCredentialsForAwsError();
+
+        throw new Error(
+            "AWS credentials expired or are invalid."
+        );
+    }
+
+    if (
+        !response.ok ||
+        data.success === false
+    ) {
+
+        throw new Error(
+            data.error ||
+            data.message ||
+            `HTTP ${response.status}`
+        );
+    }
+
+    return data;
+}
+
+
+/* =========================================================
+   ACCOUNT MODAL
+========================================================= */
+
+function openCredentials() {
+
+    state.editingAccountId = null;
+
+    clearAccountForm();
+
+    const button = $("account-add");
+
+    if (button) {
+        button.textContent = "Add Account";
+    }
+
+    renderAccountList();
+
+    $("credential-modal")
+        ?.classList.add("show");
+}
+
+function closeCredentials() {
+
+    $("credential-modal")
+        ?.classList.remove("show");
+
+    state.editingAccountId = null;
+
+    clearAccountForm();
+
+    const button = $("account-add");
+
+    if (button) {
+        button.textContent = "Add Account";
+    }
+}
+
+function clearAccountForm() {
+
+    if ($("account-name")) {
+        $("account-name").value = "";
+    }
+
+    if ($("access-key")) {
+        $("access-key").value = "";
+    }
+
+    if ($("secret-key")) {
+        $("secret-key").value = "";
+    }
+
+    if ($("session-token")) {
+        $("session-token").value = "";
+    }
+
+    if ($("account-region")) {
+        $("account-region").value = "us-west-1";
+    }
+}
+
+function editAccount(accountId) {
+
+    const account =
+        state.accounts.find(
+            item => item.id === accountId
+        );
+
+    if (!account) {
+        return;
+    }
+
+    state.editingAccountId =
+        account.id;
+
+    $("account-name").value =
+        account.name || "";
+
+    $("access-key").value =
+        account.accessKeyId || "";
+
+    $("secret-key").value =
+        account.secretAccessKey || "";
+
+    $("session-token").value =
+        account.sessionToken || "";
+
+    $("account-region").value =
+        account.region || "us-west-1";
+
+    const button =
+        $("account-add");
+
+    if (button) {
+        button.textContent =
+            "Update Account";
+    }
+
+    $("credential-modal")
+        ?.classList.add("show");
+}
+
+function saveAccount() {
+
+    const name =
+        $("account-name")
+            ?.value
+            .trim() || "";
+
+    const accessKeyId =
+        $("access-key")
+            ?.value
+            .trim() || "";
+
+    const secretAccessKey =
+        $("secret-key")
+            ?.value
+            .trim() || "";
+
+    const sessionToken =
+        $("session-token")
+            ?.value
+            .trim() || "";
+
+    const region =
+        $("account-region")
+            ?.value ||
+        "us-west-1";
+
+    if (!name) {
+
+        toast(
+            "Enter an account name.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (!accessKeyId) {
+
+        toast(
+            "Enter the AWS Access Key ID.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (!secretAccessKey) {
+
+        toast(
+            "Enter the AWS Secret Access Key.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (state.editingAccountId) {
+
+        const account =
+            state.accounts.find(
+                item =>
+                    item.id ===
+                    state.editingAccountId
+            );
+
+        if (!account) {
+            return;
+        }
+
+        account.name =
+            name;
+
+        account.accessKeyId =
+            accessKeyId;
+
+        account.secretAccessKey =
+            secretAccessKey;
+
+        account.sessionToken =
+            sessionToken;
+
+        account.region =
+            region;
+
+        state.activeAccountId =
+            account.id;
+
+        toast(
+            "AWS account updated successfully.",
+            "success"
+        );
+
+    } else {
+
+        const account = {
+
+            id:
+                crypto.randomUUID
+                    ? crypto.randomUUID()
+                    : String(Date.now()),
+
+            name,
+            accessKeyId,
+            secretAccessKey,
+            sessionToken,
+            region
+        };
+
+        state.accounts.push(account);
+
+        state.activeAccountId =
+            account.id;
+
+        toast(
+            "AWS account added successfully.",
+            "success"
+        );
+    }
+
+    saveAccounts();
+
+    updateAccountSelector();
+    updateRegionFromAccount();
+    updateSelectedAccountUI();
+
+    renderAccountList();
+
+    clearAwsData();
+
+    closeCredentials();
+
+    loadDashboard();
+}
+
+function renderAccountList() {
+
+    const container =
+        $("account-list");
+
+    if (!container) {
+        return;
+    }
+
+    if (!state.accounts.length) {
+
+        container.innerHTML =
+            `<div class="muted">No accounts added.</div>`;
+
+        return;
+    }
+
+    container.innerHTML =
+        state.accounts
+            .map(account => {
+
+                const active =
+                    account.id ===
+                    state.activeAccountId;
+
+                return `
+                    <div class="account-row ${active ? "selected" : ""}">
+
+                        <div class="account-info">
+
+                            <strong>
+                                ${escapeHtml(account.name)}
+                            </strong>
+
+                            <small>
+                                Region:
+                                ${escapeHtml(
+                                    account.region || "us-west-1"
+                                )}
+                            </small>
+
+                        </div>
+
+                        <div class="account-actions">
+
+                            <button
+                                type="button"
+                                class="account-use"
+                                data-account-id="${escapeHtml(account.id)}"
+                            >
+                                ${active ? "Active" : "Use"}
+                            </button>
+
+                            <button
+                                type="button"
+                                class="account-edit"
+                                data-account-id="${escapeHtml(account.id)}"
+                            >
+                                Edit
+                            </button>
+
+                            <button
+                                type="button"
+                                class="account-remove"
+                                data-account-id="${escapeHtml(account.id)}"
+                            >
+                                Remove
+                            </button>
+
+                        </div>
+
+                    </div>
+                `;
+            })
+            .join("");
+}
+
+function selectAccount(accountId) {
+
+    const account =
+        state.accounts.find(
+            item => item.id === accountId
+        );
+
+    if (!account) {
+        return;
+    }
+
+    state.activeAccountId =
+        accountId;
+
+    saveAccounts();
+
+    updateAccountSelector();
+    updateRegionFromAccount();
+    updateSelectedAccountUI();
+
+    renderAccountList();
+
+    clearAwsData();
+
+    closeCredentials();
+
+    loadDashboard();
+
+    if (state.currentPage === "snapshots") {
+        loadSnapshots();
+    }
+
+    if (state.currentPage === "create-snapshot") {
+        loadInstancesForSnapshot();
+    }
+
+    toast(
+        `Using ${account.name}.`,
+        "success"
+    );
+}
+
+function switchAccount() {
+
+    const select =
+        $("account-select");
+
+    if (!select?.value) {
+        return;
+    }
+
+    selectAccount(select.value);
+}
+
+function removeAccount(accountId) {
+
+    const account =
+        state.accounts.find(
+            item => item.id === accountId
+        );
+
+    if (!account) {
+        return;
+    }
+
+    if (
+        !confirm(
+            `Remove AWS account "${account.name}"?`
+        )
+    ) {
+        return;
+    }
+
+    state.accounts =
+        state.accounts.filter(
+            item => item.id !== accountId
+        );
+
+    if (
+        state.activeAccountId === accountId
+    ) {
+
+        state.activeAccountId =
+            state.accounts[0]?.id || null;
+    }
+
+    saveAccounts();
+
+    updateAccountSelector();
+    updateRegionFromAccount();
+    updateSelectedAccountUI();
+
+    renderAccountList();
+
+    clearAwsData();
+
+    loadDashboard();
+}
+
+
+/* =========================================================
+   STORAGE CALCULATIONS
+========================================================= */
+
+function getTotalVolumeStorageGB() {
+
+    return state.volumes.reduce(
+        (total, volume) => {
+
+            return (
+                total +
+                (Number(volume.size) || 0)
+            );
+
+        },
+        0
+    );
+}
+
+function formatStorageSize(storageGB) {
+
+    const gb =
+        Number(storageGB) || 0;
+
+    if (gb >= 1024) {
+
+        return `${(
+            gb / 1024
+        ).toFixed(2)} TB`;
+    }
+
+    return `${gb} GB`;
+}
+
+function updateVolumeTotals() {
+
+    const total =
+        getTotalVolumeStorageGB();
+
+    const count =
+        state.volumes.length;
+
+    const encrypted =
+        state.volumes.filter(
+            volume =>
+                Boolean(volume.encrypted)
+        ).length;
+
+    if ($("volume-count")) {
+        $("volume-count").textContent =
+            count;
+    }
+
+    if ($("volume-total-storage")) {
+        $("volume-total-storage").textContent =
+            formatStorageSize(total);
+    }
+
+    if ($("dashboard-storage-number")) {
+        $("dashboard-storage-number").textContent =
+            total.toLocaleString();
+    }
+
+    if ($("dashboard-storage-readable")) {
+        $("dashboard-storage-readable").textContent =
+            formatStorageSize(total);
+    }
+
+    if ($("volumes-page-count")) {
+        $("volumes-page-count").textContent =
+            count;
+    }
+
+    if ($("volumes-page-total")) {
+        $("volumes-page-total").textContent =
+            formatStorageSize(total);
+    }
+
+    if ($("volumes-page-encrypted")) {
+        $("volumes-page-encrypted").textContent =
+            encrypted;
+    }
+}
+
+
+/* =========================================================
+   INSTANCE STORAGE
+========================================================= */
+
+function getInstanceStorageGB(instance) {
+
+    if (!instance) {
+        return 0;
+    }
+
+    if (
+        instance.totalVolumeSize !== undefined &&
+        instance.totalVolumeSize !== null
+    ) {
+        return Number(
+            instance.totalVolumeSize
+        ) || 0;
+    }
+
+    if (
+        instance.totalVolumeSizeGB !== undefined &&
+        instance.totalVolumeSizeGB !== null
+    ) {
+        return Number(
+            instance.totalVolumeSizeGB
+        ) || 0;
+    }
+
+    if (
+        instance.totalStorageGB !== undefined &&
+        instance.totalStorageGB !== null
+    ) {
+        return Number(
+            instance.totalStorageGB
+        ) || 0;
+    }
+
+    const instanceId =
+        String(
+            instance.instanceId || ""
+        ).trim();
+
+    if (!instanceId) {
+        return 0;
+    }
+
+    return state.volumes
+        .filter(
+            volume =>
+                String(
+                    volume.attachedInstance || ""
+                ).trim() === instanceId
+        )
+        .reduce(
+            (total, volume) =>
+                total +
+                (Number(volume.size) || 0),
+            0
+        );
+}
+
+function isInstanceOverStorageLimit(instance) {
+
+    return (
+        getInstanceStorageGB(instance) >
+        MAX_INSTANCE_STORAGE_GB
+    );
+}
+
+
+/* =========================================================
+   INSTANCE DEDUPLICATION
+========================================================= */
+
+/*
+    Deduplicate AWS instances.
+
+    Priority:
+    1. Instance ID
+    2. Instance name
+
+    This protects the Create Snapshot page from
+    duplicate instances returned by the API.
+*/
+
+function deduplicateInstances(instances = []) {
+
+    const seenIds = new Set();
+    const seenNames = new Set();
+
+    const unique = [];
+
+    for (const instance of instances) {
+
+        if (!instance) {
+            continue;
+        }
+
+        const instanceId =
+            String(
+                instance.instanceId ||
+                instance.instance_id ||
+                ""
+            )
+                .trim()
+                .toLowerCase();
+
+        const instanceName =
+            String(
+                instance.name ||
+                instance.instanceName ||
+                ""
+            )
+                .trim()
+                .toLowerCase();
+
+        /*
+            If the same Instance ID was already seen,
+            ignore it.
+        */
+        if (
+            instanceId &&
+            seenIds.has(instanceId)
+        ) {
+            continue;
+        }
+
+        /*
+            If there is no ID but the same name was
+            already seen, ignore it.
+        */
+        if (
+            !instanceId &&
+            instanceName &&
+            seenNames.has(instanceName)
+        ) {
+            continue;
+        }
+
+        /*
+            If a name already maps to another instance,
+            treat it as duplicate as well.
+        */
+        if (
+            instanceName &&
+            seenNames.has(instanceName)
+        ) {
+            continue;
+        }
+
+        if (instanceId) {
+            seenIds.add(instanceId);
+        }
+
+        if (instanceName) {
+            seenNames.add(instanceName);
+        }
+
+        unique.push(instance);
+    }
+
+    return unique;
+}
+
+
+/* =========================================================
+   CLEAR AWS DATA
+========================================================= */
+
+function clearAwsData() {
+
+    state.instances = [];
+    state.volumes = [];
+    state.snapshots = [];
+
+    if ($("instance-count")) {
+        $("instance-count").textContent = "-";
+    }
+
+    if ($("snapshot-count")) {
+        $("snapshot-count").textContent = "-";
+    }
+
+    if ($("volume-count")) {
+        $("volume-count").textContent = "-";
+    }
+
+    if ($("volume-total-storage")) {
+        $("volume-total-storage").textContent = "-";
+    }
+
+    if ($("dashboard-storage-number")) {
+        $("dashboard-storage-number").textContent = "0";
+    }
+
+    if ($("dashboard-storage-readable")) {
+        $("dashboard-storage-readable").textContent = "0 GB";
+    }
+
+    if ($("volumes-page-count")) {
+        $("volumes-page-count").textContent = "0";
+    }
+
+    if ($("volumes-page-total")) {
+        $("volumes-page-total").textContent = "0 GB";
+    }
+
+    if ($("volumes-page-encrypted")) {
+        $("volumes-page-encrypted").textContent = "0";
+    }
+
+    if ($("instances-table")) {
+        $("instances-table").innerHTML = "";
+    }
+
+    if ($("volumes-table")) {
+        $("volumes-table").innerHTML = "";
+    }
+
+    if ($("snapshots-table")) {
+        $("snapshots-table").innerHTML = "";
+    }
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+async function loadDashboard() {
+
+    const account =
+        getActiveAccount();
+
+    updateSelectedAccountUI();
+
+    if (!account) {
+
+        if ($("dashboard-message")) {
+            $("dashboard-message").textContent =
+                "Add an AWS account to get started.";
+        }
+
+        return;
+    }
+
+    try {
+
+        const [
+            instances,
+            volumes,
+            snapshots
+        ] = await Promise.all([
+
+            api(
+                "/api/aws/instances",
+                {
+                    method: "POST",
+                    body:
+                        JSON.stringify(
+                            getRequestBody()
+                        )
+                }
+            ),
+
+            api(
+                "/api/aws/volumes",
+                {
+                    method: "POST",
+                    body:
+                        JSON.stringify(
+                            getRequestBody()
+                        )
+                }
+            ),
+
+            api(
+                "/api/aws/snapshots",
+                {
+                    method: "POST",
+                    body:
+                        JSON.stringify(
+                            getRequestBody()
+                        )
+                }
+            )
+
+        ]);
+
+        state.instances =
+            instances.instances || [];
+
+        state.volumes =
+            volumes.volumes || [];
+
+        state.snapshots =
+            snapshots.snapshots || [];
+
+        if ($("instance-count")) {
+            $("instance-count").textContent =
+                state.instances.length;
+        }
+
+        if ($("snapshot-count")) {
+            $("snapshot-count").textContent =
+                state.snapshots.length;
+        }
+
+        updateVolumeTotals();
+
+        if ($("dashboard-message")) {
+
+            $("dashboard-message").textContent =
+                `${account.name} — ${account.region}`;
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        toast(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   INSTANCES
+========================================================= */
+
+async function loadInstances() {
+
+    try {
+
+        setLoading(
+            true,
+            "Loading EC2 instances..."
+        );
+
+        const data =
+            await api(
+                "/api/aws/instances",
+                {
+                    method: "POST",
+                    body:
+                        JSON.stringify(
+                            getRequestBody()
+                        )
+                }
+            );
+
+        state.instances =
+            deduplicateInstances(
+                data.instances || []
+            );
+
+        if ($("instance-count")) {
+            $("instance-count").textContent =
+                state.instances.length;
+        }
+
+        searchInstances();
+
+        toast(
+            `${state.instances.length} unique instances loaded.`,
+            "success"
+        );
+
+    } catch (error) {
+
+        toast(error.message, "error");
+
+    } finally {
+
+        setLoading(false);
+    }
+}
+
+function searchInstances() {
+
+    const search =
+        $("instance-search")
+            ?.value
+            .trim()
+            .toLowerCase() || "";
+
+    const filtered =
+        state.instances.filter(instance => {
+
+            const text = [
+                instance.name,
+                instance.instanceId,
+                instance.state,
+                instance.instanceType,
+                instance.privateIp,
+                instance.publicIp,
+                instance.availabilityZone
+            ]
+                .join(" ")
+                .toLowerCase();
+
+            return text.includes(search);
+        });
+
+    if ($("instance-result-count")) {
+
+        $("instance-result-count").textContent =
+            `${filtered.length} result${filtered.length === 1 ? "" : "s"}`;
+    }
+
+    renderInstances(filtered);
+}
+
+function renderInstances(instances) {
+
+    const container =
+        $("instances-table");
+
+    if (!container) {
+        return;
+    }
+
+    if (!instances.length) {
+
+        container.innerHTML =
+            `<div class="empty-state small">
+                No instances found.
+            </div>`;
+
+        return;
+    }
+
+    container.innerHTML = `
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Instance ID</th>
+                        <th>State</th>
+                        <th>Type</th>
+                        <th>Private IP</th>
+                        <th>Public IP</th>
+                        <th>AZ</th>
+                        <th>Volumes</th>
+                        <th>Total Storage</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    ${instances.map(instance => {
+
+                        const storageGB =
+                            getInstanceStorageGB(
+                                instance
+                            );
+
+                        const overLimit =
+                            storageGB >
+                            MAX_INSTANCE_STORAGE_GB;
+
+                        return `
+                            <tr>
+
+                                <td>
+                                    ${escapeHtml(instance.name)}
+                                </td>
+
+                                <td>
+                                    <code>
+                                        ${escapeHtml(instance.instanceId)}
+                                    </code>
+                                </td>
+
+                                <td>
+                                    <span class="status ${escapeHtml(instance.state)}">
+                                        ${escapeHtml(instance.state)}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(instance.instanceType)}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(instance.privateIp)}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(instance.publicIp)}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(instance.availabilityZone)}
+                                </td>
+
+                                <td>
+                                    ${Number(instance.volumeCount || 0)}
+                                </td>
+
+                                <td>
+                                    <span class="${overLimit ? "status error" : ""}">
+                                        ${escapeHtml(
+                                            formatStorageSize(storageGB)
+                                        )}
+                                    </span>
+                                </td>
+
+                            </tr>
+                        `;
+
+                    }).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   VOLUMES
+========================================================= */
+
+async function loadVolumes() {
+
+    try {
+
+        setLoading(
+            true,
+            "Loading EBS volumes..."
+        );
+
+        const data =
+            await api(
+                "/api/aws/volumes",
+                {
+                    method: "POST",
+                    body:
+                        JSON.stringify(
+                            getRequestBody()
+                        )
+                }
+            );
+
+        state.volumes =
+            data.volumes || [];
+
+        updateVolumeTotals();
+
+        renderVolumes(
+            state.volumes
+        );
+
+        toast(
+            `${state.volumes.length} volumes loaded.`,
+            "success"
+        );
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    } finally {
+
+        setLoading(false);
+    }
+}
+
+function renderVolumes(volumes) {
+
+    const container =
+        $("volumes-table");
+
+    if (!container) {
+        return;
+    }
+
+    updateVolumeTotals();
+
+    if (!volumes.length) {
+
+        container.innerHTML =
+            `<div class="empty-state small">
+                No EBS volumes found.
+            </div>`;
+
+        return;
+    }
+
+    container.innerHTML = `
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Name</th>
+                        <th>Volume ID</th>
+                        <th>Size</th>
+                        <th>Type</th>
+                        <th>State</th>
+                        <th>Instance</th>
+                        <th>Encrypted</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${volumes.map(volume => `
+
+                        <tr>
+
+                            <td>
+                                ${escapeHtml(volume.name)}
+                            </td>
+
+                            <td>
+                                <code>
+                                    ${escapeHtml(volume.volumeId)}
+                                </code>
+                            </td>
+
+                            <td>
+                                <strong>
+                                    ${Number(volume.size || 0)} GB
+                                </strong>
+                            </td>
+
+                            <td>
+                                ${escapeHtml(volume.type)}
+                            </td>
+
+                            <td>
+                                <span class="status ${escapeHtml(volume.state)}">
+                                    ${escapeHtml(volume.state)}
+                                </span>
+                            </td>
+
+                            <td>
+                                <code>
+                                    ${escapeHtml(volume.attachedInstance)}
+                                </code>
+                            </td>
+
+                            <td>
+                                ${volume.encrypted ? "Yes" : "No"}
+                            </td>
+
+                        </tr>
+
+                    `).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   SNAPSHOTS
+========================================================= */
+
+async function loadSnapshots(options = {}) {
+
+    const silent =
+        Boolean(options.silent);
+
+    try {
+
+        if (!silent) {
+
+            setLoading(
+                true,
+                "Loading AWS snapshots..."
+            );
+        }
+
+        const data =
+            await api(
+                "/api/aws/snapshots",
+                {
+                    method: "POST",
+                    body:
+                        JSON.stringify(
+                            getRequestBody()
+                        )
+                }
+            );
+
+        state.snapshots =
+            data.snapshots || [];
+
+        if ($("snapshot-count")) {
+            $("snapshot-count").textContent =
+                state.snapshots.length;
+        }
+
+        searchSnapshots();
+
+        /*
+            Only show success toast for manual loads.
+            Background polling should remain quiet.
+        */
+        if (!silent) {
+
+            toast(
+                `${state.snapshots.length} snapshots loaded.`,
+                "success"
+            );
+        }
+
+    } catch (error) {
+
+        /*
+            Don't spam the user every 15 seconds if
+            background polling temporarily fails.
+        */
+        if (!silent) {
+
+            toast(
+                error.message,
+                "error"
+            );
+
+        } else {
+
+            console.error(
+                "Snapshot polling failed:",
+                error
+            );
+        }
+
+    } finally {
+
+        if (!silent) {
+            setLoading(false);
+        }
+    }
+}
+
+function searchSnapshots() {
+
+    const search =
+        $("snapshot-search")
+            ?.value
+            .trim()
+            .toLowerCase() || "";
+
+    const filtered =
+        state.snapshots.filter(snapshot => {
+
+            const text = [
+                snapshot.snapshotId,
+                snapshot.volumeId,
+                snapshot.state,
+                snapshot.progress,
+                snapshot.description,
+                snapshot.instanceName,
+                snapshot.instanceId,
+                snapshot.createdBy,
+                snapshot.team
+            ]
+                .join(" ")
+                .toLowerCase();
+
+            return text.includes(search);
+        });
+
+    if ($("snapshot-result-count")) {
+
+        $("snapshot-result-count").textContent =
+            `${filtered.length} result${filtered.length === 1 ? "" : "s"}`;
+    }
+
+    renderSnapshots(filtered);
+}
+
+function renderSnapshots(snapshots) {
+
+    const container =
+        $("snapshots-table");
+
+    if (!container) {
+        return;
+    }
+
+    if (!snapshots.length) {
+
+        container.innerHTML =
+            `<div class="empty-state small">
+                No snapshots found.
+            </div>`;
+
+        return;
+    }
+
+    container.innerHTML = `
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Snapshot</th>
+                        <th>Instance</th>
+                        <th>Volume</th>
+                        <th>State</th>
+                        <th>Progress</th>
+                        <th>Created By</th>
+                        <th>Team</th>
+                        <th>Start Time</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${snapshots.map(snapshot => `
+
+                        <tr>
+
+                            <td>
+                                <code>
+                                    ${escapeHtml(snapshot.snapshotId)}
+                                </code>
+                            </td>
+
+                            <td>
+                                ${escapeHtml(snapshot.instanceName)}
+                                <br>
+                                <small>
+                                    ${escapeHtml(snapshot.instanceId)}
+                                </small>
+                            </td>
+
+                            <td>
+                                <code>
+                                    ${escapeHtml(snapshot.volumeId)}
+                                </code>
+                            </td>
+
+                            <td>
+                                <span class="status ${escapeHtml(snapshot.state)}">
+                                    ${escapeHtml(snapshot.state)}
+                                </span>
+                            </td>
+
+                            <td>
+                                ${escapeHtml(snapshot.progress)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(snapshot.createdBy)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(snapshot.team)}
+                            </td>
+
+                            <td>
+                                ${formatDate(snapshot.startTime)}
+                            </td>
+
+                        </tr>
+
+                    `).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   SNAPSHOT POLLING
+========================================================= */
+
+/*
+    Poll snapshots every 15 seconds while the
+    Snapshots page is active.
+
+    Example:
+
+        10:00:00 -> API call
+        10:00:15 -> API call
+        10:00:30 -> API call
+        10:00:45 -> API call
+
+    Background calls use silent:true so the loading
+    overlay and success toast do not appear every time.
+*/
+
+function startSnapshotPolling() {
+
+    stopSnapshotPolling();
+
+    /*
+        Load immediately when polling starts.
+    */
+    loadSnapshots({
+        silent: true
+    });
+
+    state.snapshotPollingTimer =
+        setInterval(() => {
+
+            if (
+                state.currentPage !==
+                "snapshots"
+            ) {
+                return;
+            }
+
+            if (!getActiveAccount()) {
+                return;
+            }
+
+            loadSnapshots({
+                silent: true
+            });
+
+        }, SNAPSHOT_POLL_INTERVAL);
+}
+
+function stopSnapshotPolling() {
+
+    if (
+        state.snapshotPollingTimer
+    ) {
+
+        clearInterval(
+            state.snapshotPollingTimer
+        );
+
+        state.snapshotPollingTimer =
+            null;
+    }
+}
+
+
+/* =========================================================
+   CREATE SNAPSHOT
+========================================================= */
+
+async function loadInstancesForSnapshot() {
+
+    if (!getActiveAccount()) {
+        return;
+    }
+
+    if (state.instances.length) {
+
+        /*
+            Make sure previously loaded data is also
+            deduplicated.
+        */
+        state.instances =
+            deduplicateInstances(
+                state.instances
+            );
+
+        updateInstanceHint();
+
+        return;
+    }
+
+    try {
+
+        setLoading(
+            true,
+            "Loading instances..."
+        );
+
+        const data =
+            await api(
+                "/api/aws/instances",
+                {
+                    method: "POST",
+                    body:
+                        JSON.stringify(
+                            getRequestBody()
+                        )
+                }
+            );
+
+        /*
+            IMPORTANT:
+            Deduplicate API results before storing them.
+        */
+        state.instances =
+            deduplicateInstances(
+                data.instances || []
+            );
+
+        updateInstanceHint();
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    } finally {
+
+        setLoading(false);
+    }
+}
+
+function updateInstanceHint() {
+
+    const hint =
+        $("snapshot-instance-hint");
+
+    if (!hint) {
+        return;
+    }
+
+    hint.textContent =
+        `${state.instances.length} unique instance(s) available in ${getActiveAccount()?.region || "-"}.
+        Instances with more than 2 TB of attached EBS storage cannot be snapshotted.`;
+}
+
+function getSnapshotInstanceLines() {
+
+    const lines =
+        $("snapshot-instances")
+            ?.value
+            .split(/\r?\n/)
+            .map(value => value.trim())
+            .filter(Boolean) ||
+        [];
+
+    /*
+        Deduplicate the user's text input.
+
+        Example:
+
+        web-server
+        web-server
+        i-123456
+        i-123456
+
+        becomes:
+
+        web-server
+        i-123456
+    */
+
+    const seen = new Set();
+
+    return lines.filter(value => {
+
+        const key =
+            value.toLowerCase();
+
+        if (seen.has(key)) {
+            return false;
+        }
+
+        seen.add(key);
+
+        return true;
+    });
+}
+
+function previewSnapshotInstances() {
+
+    const lines =
+        getSnapshotInstanceLines();
+
+    const preview =
+        $("snapshot-instance-preview");
+
+    if (!preview) {
+        return;
+    }
+
+    /*
+        Make sure API instances are unique before
+        matching user input.
+    */
+    state.instances =
+        deduplicateInstances(
+            state.instances
+        );
+
+    if (!lines.length) {
+
+        preview.innerHTML =
+            `<div class="muted">
+                Enter one instance name or ID per line.
+            </div>`;
+
+        return;
+    }
+
+    const results =
+        lines.map(input => {
+
+            const lower =
+                input.toLowerCase();
+
+            const match =
+                state.instances.find(
+                    instance =>
+                        String(instance.instanceId)
+                            .toLowerCase() === lower ||
+                        String(instance.name)
+                            .toLowerCase() === lower
+                );
+
+            return {
+                input,
+                match
+            };
+        });
+
+    const found =
+        results.filter(item => item.match);
+
+    const missing =
+        results.filter(item => !item.match);
+
+    const oversized =
+        found.filter(
+            item =>
+                isInstanceOverStorageLimit(
+                    item.match
+                )
+        );
+
+    const allowed =
+        found.filter(
+            item =>
+                !isInstanceOverStorageLimit(
+                    item.match
+                )
+        );
+
+    let html = "";
+
+    if (allowed.length) {
+
+        html += `
+            <div class="success-box">
+
+                <strong>
+                    ${allowed.length}
+                    unique instance(s) eligible for snapshot
+                </strong>
+
+                <ul>
+
+                    ${allowed.map(item => `
+
+                        <li>
+                            ${escapeHtml(
+                                item.match.name ||
+                                item.match.instanceId
+                            )}
+
+                            —
+
+                            ${escapeHtml(
+                                formatStorageSize(
+                                    getInstanceStorageGB(
+                                        item.match
+                                    )
+                                )
+                            )}
+                        </li>
+
+                    `).join("")}
+
+                </ul>
+
+            </div>
+        `;
+    }
+
+    if (oversized.length) {
+
+        html += `
+            <div class="error-box">
+
+                <strong>
+                    ${oversized.length}
+                    instance(s) exceed 2 TB
+                </strong>
+
+                <ul>
+
+                    ${oversized.map(item => `
+
+                        <li>
+                            ${escapeHtml(
+                                item.match.name ||
+                                item.match.instanceId
+                            )}
+
+                            —
+
+                            ${escapeHtml(
+                                formatStorageSize(
+                                    getInstanceStorageGB(
+                                        item.match
+                                    )
+                                )
+                            )}
+                        </li>
+
+                    `).join("")}
+
+                </ul>
+
+            </div>
+        `;
+    }
+
+    if (missing.length) {
+
+        html += `
+            <div class="error-box">
+
+                <strong>
+                    ${missing.length}
+                    instance(s) not found
+                </strong>
+
+                <ul>
+
+                    ${missing.map(item => `
+                        <li>
+                            ${escapeHtml(item.input)}
+                        </li>
+                    `).join("")}
+
+                </ul>
+
+            </div>
+        `;
+    }
+
+    preview.innerHTML = html;
+}
+
+async function createSnapshotsFromInstances() {
+
+    const account =
+        getActiveAccount();
+
+    if (!account) {
+
+        toast(
+            "Connect an AWS account first.",
+            "error"
+        );
+
+        openCredentials();
+
+        return;
+    }
+
+    /*
+        Deduplicate both:
+        - API instances
+        - User input
+    */
+    state.instances =
+        deduplicateInstances(
+            state.instances
+        );
+
+    const instances =
+        getSnapshotInstanceLines();
+
+    if (!instances.length) {
+
+        toast(
+            "Enter at least one instance name or ID.",
+            "error"
+        );
+
+        return;
+    }
+
+    /*
+        Resolve every input against the unique
+        instance list.
+    */
+    const matchedInstances =
+        instances
+            .map(input => {
+
+                const lower =
+                    input.toLowerCase();
+
+                return state.instances.find(
+                    instance =>
+                        String(instance.instanceId)
+                            .toLowerCase() === lower ||
+                        String(instance.name)
+                            .toLowerCase() === lower
+                );
+
+            })
+            .filter(Boolean);
+
+    /*
+        Extra safety:
+        Deduplicate matched AWS instances by
+        instance ID before sending to backend.
+    */
+    const uniqueMatchedInstances =
+        deduplicateInstances(
+            matchedInstances
+        );
+
+    const oversized =
+        uniqueMatchedInstances.filter(
+            instance =>
+                isInstanceOverStorageLimit(instance)
+        );
+
+    if (oversized.length) {
+
+        alert(
+            "Snapshot creation blocked.\n\n" +
+            "One or more instances exceed the 2 TB limit."
+        );
+
+        return;
+    }
+
+    /*
+        If a name/ID does not resolve, let the user
+        know instead of silently submitting partial data.
+    */
+    if (
+        uniqueMatchedInstances.length !==
+        instances.length
+    ) {
+
+        const matchedKeys =
+            new Set(
+                uniqueMatchedInstances.flatMap(
+                    instance => [
+                        String(
+                            instance.instanceId || ""
+                        ).toLowerCase(),
+
+                        String(
+                            instance.name || ""
+                        ).toLowerCase()
+                    ]
+                )
+            );
+
+        const missing =
+            instances.filter(
+                input =>
+                    !matchedKeys.has(
+                        input.toLowerCase()
+                    )
+            );
+
+        if (missing.length) {
+
+            alert(
+                "The following instance(s) were not found:\n\n" +
+                missing.join("\n")
+            );
+
+            return;
+        }
+    }
+
+    const description =
+        $("snapshot-description")
+            ?.value
+            .trim() || "";
+
+    if (
+        !confirm(
+            `Create snapshots for ${uniqueMatchedInstances.length} unique instance(s)?`
+        )
+    ) {
+        return;
+    }
+
+    /*
+        Send canonical Instance IDs where possible.
+        This prevents duplicate names from creating
+        duplicate backend requests.
+    */
+    const snapshotInstances =
+        uniqueMatchedInstances.map(
+            instance =>
+                instance.instanceId ||
+                instance.name
+        );
+
+    try {
+
+        setLoading(
+            true,
+            "Creating snapshots..."
+        );
+
+        const data =
+            await api(
+                "/api/aws/create-instance-snapshots",
+                {
+                    method: "POST",
+                    body:
+                        JSON.stringify({
+                            ...getRequestBody(),
+
+                            /*
+                                Unique instance identifiers only.
+                            */
+                            instances:
+                                snapshotInstances,
+
+                            description
+                        })
+                }
+            );
+
+        renderCreateResults(data);
+
+        toast(
+            `Snapshot job ${data.jobId} started.`,
+            "success"
+        );
+
+        showPage("snapshot-dashboard");
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    } finally {
+
+        setLoading(false);
+    }
+}
+
+function renderCreateResults(data) {
+
+    const container =
+        $("snapshot-result");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = `
+
+        <div class="success-box">
+
+            <h3>
+                Snapshot job started
+            </h3>
+
+            <p>
+                Job ID:
+                <strong>
+                    ${escapeHtml(data.jobId)}
+                </strong>
+            </p>
+
+            <p>
+                Instances:
+                <strong>
+                    ${Number(data.instanceCount || 0)}
+                </strong>
+            </p>
+
+            <p>
+                Volumes:
+                <strong>
+                    ${Number(data.volumeCount || 0)}
+                </strong>
+            </p>
+
+            <p>
+                Snapshots:
+                <strong>
+                    ${Number(data.snapshotCount || 0)}
+                </strong>
+            </p>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   PAGE NAVIGATION
+========================================================= */
+
+function showPage(page) {
+
+    /*
+        Stop snapshot polling when navigating away.
+    */
+    if (page !== "snapshots") {
+        stopSnapshotPolling();
+    }
+
+    /*
+        Stop snapshot-job polling when navigating away.
+    */
+    if (page !== "snapshot-dashboard") {
+        stopSnapshotDashboardPolling();
+    }
+
+    document
+        .querySelectorAll(".page")
+        .forEach(element => {
+
+            element.classList.toggle(
+                "active",
+                element.id === page
+            );
+        });
+
+    document
+        .querySelectorAll("[data-page]")
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.page === page
+            );
+        });
+
+    const titles = {
+
+        dashboard: "Dashboard",
+        instances: "Instances",
+        volumes: "Volumes",
+        snapshots: "Snapshots",
+        "create-snapshot": "Create Snapshot",
+        "snapshot-dashboard": "Snapshot Jobs"
+    };
+
+    if ($("page-title")) {
+
+        $("page-title").textContent =
+            titles[page] ||
+            "AWS Snapshot Portal";
+    }
+
+    state.currentPage = page;
+
+    if (page === "dashboard") {
+        loadDashboard();
+    }
+
+    if (page === "instances") {
+        loadInstances();
+    }
+
+    if (page === "volumes") {
+        loadVolumes();
+    }
+
+    if (page === "snapshots") {
+
+        /*
+            Initial snapshot load + start 15 second polling.
+        */
+        loadSnapshots();
+        startSnapshotPolling();
+    }
+
+    if (page === "create-snapshot") {
+        loadInstancesForSnapshot();
+    }
+
+    if (page === "snapshot-dashboard") {
+
+        loadSnapshotDashboard();
+
+        startSnapshotDashboardPolling();
+    }
+}
+
+
+/* =========================================================
+   SNAPSHOT DASHBOARD
+========================================================= */
+
+async function loadSnapshotDashboard() {
+
+    try {
+
+        const data =
+            await api(
+                "/api/snapshot-dashboard"
+            );
+
+        renderSnapshotDashboard(data);
+
+        await syncRunningJobs(
+            data.jobs || []
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        toast(
+            error.message,
+            "error"
+        );
+    }
+}
+
+function renderSnapshotDashboard(data) {
+
+    const summary =
+        data.summary || {};
+
+    if ($("sd-total-jobs")) {
+        $("sd-total-jobs").textContent =
+            Number(summary.total_jobs || 0);
+    }
+
+    if ($("sd-running-jobs")) {
+        $("sd-running-jobs").textContent =
+            Number(summary.running_jobs || 0);
+    }
+
+    if ($("sd-total-snapshots")) {
+        $("sd-total-snapshots").textContent =
+            Number(summary.total_snapshots || 0);
+    }
+
+    if ($("sd-completed-snapshots")) {
+        $("sd-completed-snapshots").textContent =
+            Number(summary.completed_snapshots || 0);
+    }
+
+    if ($("sd-failed-snapshots")) {
+        $("sd-failed-snapshots").textContent =
+            Number(summary.failed_snapshots || 0);
+    }
+
+    renderSnapshotJobs(
+        data.jobs || []
+    );
+}
+
+function renderSnapshotJobs(jobs) {
+
+    const container =
+        $("snapshot-jobs-table");
+
+    if (!container) {
+        return;
+    }
+
+    if (!jobs.length) {
+
+        container.innerHTML =
+            `<div class="empty-state">
+                No snapshot jobs found.
+            </div>`;
+
+        return;
+    }
+
+    container.innerHTML = `
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Job</th>
+                        <th>Account</th>
+                        <th>Region</th>
+                        <th>Status</th>
+                        <th>Instances</th>
+                        <th>Volumes</th>
+                        <th>Snapshots</th>
+                        <th>Completed</th>
+                        <th>Failed</th>
+                        <th>Progress</th>
+                        <th>Created By</th>
+                        <th>Started</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${jobs.map(job => `
+
+                        <tr>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    class="link-button job-details"
+                                    data-job-id="${escapeHtml(job.job_id)}"
+                                >
+                                    ${escapeHtml(job.job_id)}
+                                </button>
+                            </td>
+
+                            <td>
+                                ${escapeHtml(job.account_name)}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    ${escapeHtml(job.region)}
+                                </strong>
+                            </td>
+
+                            <td>
+                                <span class="status ${escapeHtml(job.status)}">
+                                    ${escapeHtml(job.status)}
+                                </span>
+                            </td>
+
+                            <td>
+                                ${Number(job.total_instances || 0)}
+                            </td>
+
+                            <td>
+                                ${Number(job.total_volumes || 0)}
+                            </td>
+
+                            <td>
+                                ${Number(job.total_snapshots || 0)}
+                            </td>
+
+                            <td>
+                                ${Number(job.completed_snapshots || 0)}
+                            </td>
+
+                            <td>
+                                ${Number(job.failed_snapshots || 0)}
+                            </td>
+
+                            <td>
+
+                                <div class="progress">
+
+                                    <div
+                                        class="progress-bar"
+                                        style="width:${Number(job.progress || 0)}%"
+                                    ></div>
+
+                                </div>
+
+                                <small>
+                                    ${Number(job.progress || 0).toFixed(1)}%
+                                </small>
+
+                            </td>
+
+                            <td>
+                                ${escapeHtml(job.created_by)}
+                            </td>
+
+                            <td>
+                                ${formatDate(job.started_at)}
+                            </td>
+
+                        </tr>
+
+                    `).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   JOB DETAILS
+========================================================= */
+
+async function showJobDetails(jobId) {
+
+    try {
+
+        const data =
+            await api(
+                `/api/snapshot-jobs/${encodeURIComponent(jobId)}`
+            );
+
+        const job =
+            data.job;
+
+        const items =
+            data.items || [];
+
+        const modal =
+            $("job-details-modal");
+
+        const content =
+            $("job-details-content");
+
+        if (!modal || !content) {
+            return;
+        }
+
+        content.innerHTML = `
+
+            <div class="job-summary">
+
+                <h2>
+                    ${escapeHtml(job.job_id)}
+                </h2>
+
+                <p>
+                    Status:
+                    <strong>
+                        ${escapeHtml(job.status)}
+                    </strong>
+                </p>
+
+                <p>
+                    Progress:
+                    <strong>
+                        ${Number(job.progress || 0).toFixed(1)}%
+                    </strong>
+                </p>
+
+            </div>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Instance</th>
+                            <th>Instance ID</th>
+                            <th>Volume</th>
+                            <th>Snapshot</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                            <th>Error</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        ${items.map(item => `
+
+                            <tr>
+
+                                <td>
+                                    ${escapeHtml(item.instance_name)}
+                                </td>
+
+                                <td>
+                                    <code>
+                                        ${escapeHtml(item.instance_id)}
+                                    </code>
+                                </td>
+
+                                <td>
+                                    <code>
+                                        ${escapeHtml(item.volume_id)}
+                                    </code>
+                                </td>
+
+                                <td>
+                                    <code>
+                                        ${escapeHtml(item.snapshot_id)}
+                                    </code>
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(item.status)}
+                                </td>
+
+                                <td>
+                                    ${Number(item.progress || 0)}%
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(item.error_message)}
+                                </td>
+
+                            </tr>
+
+                        `).join("")}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        `;
+
+        modal.classList.add("show");
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+    }
+}
+
+function closeJobDetails() {
+
+    $("job-details-modal")
+        ?.classList.remove("show");
+}
+
+
+/* =========================================================
+   JOB SYNC / AUTO REFRESH
+========================================================= */
+
+async function syncRunningJobs(jobs) {
+
+    const activeJobs =
+        jobs.filter(
+            job =>
+                job.status === "running"
+        );
+
+    if (!activeJobs.length) {
+        return;
+    }
+
+    const account =
+        getActiveAccount();
+
+    if (!account) {
+        return;
+    }
+
+    for (const job of activeJobs) {
+
+        if (
+            job.account_name !==
+            account.name
+        ) {
+            continue;
+        }
+
+        try {
+
+            await api(
+                `/api/snapshot-jobs/${encodeURIComponent(job.job_id)}/sync`,
+                {
+                    method: "POST",
+                    body:
+                        JSON.stringify(
+                            getRequestBody()
+                        )
+                }
+            );
+
+        } catch (error) {
+
+            console.error(
+                `Unable to sync ${job.job_id}`,
+                error
+            );
+        }
+    }
+}
+
+function startSnapshotDashboardPolling() {
+
+    stopSnapshotDashboardPolling();
+
+    state.snapshotDashboardTimer =
+        setInterval(() => {
+
+            if (
+                state.currentPage ===
+                "snapshot-dashboard"
+            ) {
+
+                loadSnapshotDashboard();
+            }
+
+        }, SNAPSHOT_DASHBOARD_POLL_INTERVAL);
+}
+
+function stopSnapshotDashboardPolling() {
+
+    if (
+        state.snapshotDashboardTimer
+    ) {
+
+        clearInterval(
+            state.snapshotDashboardTimer
+        );
+
+        state.snapshotDashboardTimer =
+            null;
+    }
+}
+
+
+/* =========================================================
+   EVENT LISTENERS
+========================================================= */
+
+function setupEventListeners() {
+
+    document
+        .querySelectorAll("[data-page]")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    showPage(
+                        button.dataset.page
+                    );
+                }
+            );
+        });
+
+
+    $("account-select")
+        ?.addEventListener(
+            "change",
+            switchAccount
+        );
+
+
+    $("region")
+        ?.addEventListener(
+            "change",
+            regionChanged
+        );
+
+
+    $("open-credentials")
+        ?.addEventListener(
+            "click",
+            openCredentials
+        );
+
+
+    $("close-credentials")
+        ?.addEventListener(
+            "click",
+            closeCredentials
+        );
+
+
+    $("dashboard-add-account")
+        ?.addEventListener(
+            "click",
+            openCredentials
+        );
+
+
+    $("account-add")
+        ?.addEventListener(
+            "click",
+            saveAccount
+        );
+
+
+    $("account-cancel")
+        ?.addEventListener(
+            "click",
+            closeCredentials
+        );
+
+
+    $("account-list")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                const useButton =
+                    event.target.closest(
+                        ".account-use"
+                    );
+
+                const editButton =
+                    event.target.closest(
+                        ".account-edit"
+                    );
+
+                const removeButton =
+                    event.target.closest(
+                        ".account-remove"
+                    );
+
+                if (useButton) {
+
+                    selectAccount(
+                        useButton.dataset.accountId
+                    );
+
+                    return;
+                }
+
+                if (editButton) {
+
+                    editAccount(
+                        editButton.dataset.accountId
+                    );
+
+                    return;
+                }
+
+                if (removeButton) {
+
+                    removeAccount(
+                        removeButton.dataset.accountId
+                    );
+                }
+            }
+        );
+
+
+    $("instance-search")
+        ?.addEventListener(
+            "input",
+            searchInstances
+        );
+
+
+    $("snapshot-search")
+        ?.addEventListener(
+            "input",
+            searchSnapshots
+        );
+
+
+    $("fetch-instances")
+        ?.addEventListener(
+            "click",
+            loadInstances
+        );
+
+
+    $("fetch-volumes")
+        ?.addEventListener(
+            "click",
+            loadVolumes
+        );
+
+
+    $("fetch-snapshots")
+        ?.addEventListener(
+            "click",
+            loadSnapshots
+        );
+
+
+    $("refresh-dashboard")
+        ?.addEventListener(
+            "click",
+            loadDashboard
+        );
+
+
+    $("refresh-snapshot-dashboard")
+        ?.addEventListener(
+            "click",
+            loadSnapshotDashboard
+        );
+
+
+    $("snapshot-instances")
+        ?.addEventListener(
+            "input",
+            previewSnapshotInstances
+        );
+
+
+    $("preview-instances")
+        ?.addEventListener(
+            "click",
+            previewSnapshotInstances
+        );
+
+
+    $("create-snapshots")
+        ?.addEventListener(
+            "click",
+            createSnapshotsFromInstances
+        );
+
+
+    $("snapshot-jobs-table")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                const button =
+                    event.target.closest(
+                        ".job-details"
+                    );
+
+                if (button) {
+
+                    showJobDetails(
+                        button.dataset.jobId
+                    );
+                }
+            }
+        );
+
+
+    $("close-job-details")
+        ?.addEventListener(
+            "click",
+            closeJobDetails
+        );
+
+
+    $("credential-modal")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    $("credential-modal")
+                ) {
+
+                    closeCredentials();
+                }
+            }
+        );
+
+
+    $("job-details-modal")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    $("job-details-modal")
+                ) {
+
+                    closeJobDetails();
+                }
+            }
+        );
+}
+
+
+/* =========================================================
+   CLEANUP
+========================================================= */
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+
+        stopSnapshotPolling();
+
+        stopSnapshotDashboardPolling();
+    }
+);
+
+
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        console.log(
+            "AWS Snapshot Portal initializing..."
+        );
+
+        loadAccounts();
+
+        updateAccountSelector();
+
+        updateRegionFromAccount();
+
+        updateSelectedAccountUI();
+
+        updateVolumeTotals();
+
+        setupEventListeners();
+
+        showPage("dashboard");
+
+        console.log(
+            "AWS Snapshot Portal ready."
+        );
+    }
+);

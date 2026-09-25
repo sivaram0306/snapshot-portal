@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>AWS Access - AWS Snapshot Portal</title>
+
+  <link
+    rel="stylesheet"
+    href="/css/style.css"
+  >
+
+</head>
+
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+
+      <div class="logo-mark">A</div>
+
+      <div>
+        <div class="logo-title">
+          AWS Snapshot
+        </div>
+
+        <div class="logo-subtitle">
+          Management Portal
+        </div>
+      </div>
+
+    </div>
+
+
+    <nav class="menu">
+
+      <a href="/index.html" class="menu-item">
+        <span class="menu-icon">⌂</span>
+        <span class="menu-text">Dashboard</span>
+      </a>
+
+      <a href="/pages/instances.html" class="menu-item">
+        <span class="menu-icon">▣</span>
+        <span class="menu-text">Instances</span>
+      </a>
+
+      <a href="/pages/volumes.html" class="menu-item">
+        <span class="menu-icon">▤</span>
+        <span class="menu-text">Volumes</span>
+      </a>
+
+      <a href="/pages/snapshots.html" class="menu-item">
+        <span class="menu-icon">◉</span>
+        <span class="menu-text">Snapshots</span>
+      </a>
+
+      <div class="menu-label">
+        MANAGEMENT
+      </div>
+
+      <a href="/pages/accounts.html" class="menu-item">
+        <span class="menu-icon">☁</span>
+        <span class="menu-text">Accounts</span>
+      </a>
+
+      <a
+        href="/pages/access.html"
+        class="menu-item active"
+      >
+        <span class="menu-icon">🔑</span>
+        <span class="menu-text">AWS Access</span>
+      </a>
+
+      <a href="/pages/settings.html" class="menu-item">
+        <span class="menu-icon">⚙</span>
+        <span class="menu-text">Settings</span>
+      </a>
+
+    </nav>
+
+
+    <div class="sidebar-footer">
+
+      <div class="connection">
+
+        <span class="connection-dot"></span>
+
+        <span class="connection-text">
+          Disconnected
+        </span>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-title">
+
+        <h1>AWS Access</h1>
+
+        <p>
+          Configure AWS connection
+        </p>
+
+      </div>
+
+    </header>
+
+
+    <div class="content">
+
+      <div class="page-header">
+
+        <div>
+
+          <h2>
+            AWS Connection
+          </h2>
+
+          <p>
+            Connect the portal to an AWS account.
+          </p>
+
+        </div>
+
+        <button
+          class="btn btn-primary"
+          onclick="openAccessModal()"
+        >
+          Configure Access
+        </button>
+
+      </div>
+
+
+      <div class="account">
+
+        <h3 id="accessTitle">
+          Not connected
+        </h3>
+
+        <p id="accessDescription">
+          No AWS credentials are currently connected.
+        </p>
+
+        <button
+          class="btn btn-secondary"
+          onclick="disconnectAWS()"
+        >
+          Disconnect
+        </button>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<!-- ACCESS MODAL -->
+
+<div
+  id="accessModal"
+  class="modal"
+>
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <h3>
+        AWS Access
+      </h3>
+
+      <button
+        class="modal-close"
+        onclick="closeAccessModal()"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        Access Key ID
+      </label>
+
+      <input
+        id="accessKeyId"
+        autocomplete="off"
+      >
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        Secret Access Key
+      </label>
+
+      <input
+        id="secretAccessKey"
+        type="password"
+        autocomplete="off"
+      >
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        Session Token
+      </label>
+
+      <input
+        id="sessionToken"
+        type="password"
+        placeholder="Optional"
+        autocomplete="off"
+      >
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        class="btn btn-secondary"
+        onclick="closeAccessModal()"
+      >
+        Cancel
+      </button>
+
+      <button
+        class="btn btn-primary"
+        onclick="connectAWS()"
+      >
+        Connect
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<div id="toast" class="toast"></div>
+
+
+<script src="/js/common.js"></script>
+<script src="/js/access.js"></script>
+
+</body>
+
+</html>
