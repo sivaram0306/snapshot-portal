@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ AWS EC2 Cyber-Matrix Portal</title>
+    <!-- FontAwesome Pro / Free Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Futuristic Custom Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- =========================================================
+         GLOBAL UI OVERLAYS & NOTIFICATIONS
+    ========================================================= -->
+    <div id="loading" class="loading-overlay">
+        <div class="loading-card">
+            <div class="cyber-spinner"></div>
+            <div id="loading-text">ESTABLISHING QUANTUM LINK...</div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- =========================================================
+         FUTURISTIC CYBER-SIDEBAR
+    ========================================================= -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="cloud-logo">
+                <i class="fa-solid fa-atom"></i>
+            </div>
+            <div class="brand-info">
+                <strong>CYBER-MATRIX</strong>
+                <small>AWS EC2 Telemetry OS</small>
+            </div>
+        </div>
+
+        <nav class="navigation">
+            <button class="nav-item active" data-page="dashboard" type="button">
+                <span><i class="fa-solid fa-chart-line"></i></span> Dashboard
+            </button>
+            <button class="nav-item" data-page="instances" type="button">
+                <span><i class="fa-solid fa-server"></i></span> Instances
+            </button>
+            <button class="nav-item" data-page="volumes" type="button">
+                <span><i class="fa-solid fa-hard-drive"></i></span> Volumes
+            </button>
+            <button class="nav-item" data-page="snapshots" type="button">
+                <span><i class="fa-solid fa-camera-retro"></i></span> Snapshots
+            </button>
+            <button class="nav-item" data-page="create-snapshot" type="button">
+                <span><i class="fa-solid fa-circle-plus"></i></span> Create Snapshot
+            </button>
+            <button class="nav-item" data-page="snapshot-dashboard" type="button">
+                <span><i class="fa-solid fa-bolt"></i></span> Snapshot Jobs
+            </button>
+            <button class="nav-item" data-page="revert-snapshot" type="button">
+                <span><i class="fa-solid fa-rotate-left"></i></span> Revert Snapshot
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span>SECURE SEC-STREAM</span>
+            <small>v4.9.2-quantum</small>
+        </div>
+    </aside>
+
+    <!-- =========================================================
+         MAIN APPLICATION CONTAINER
+    ========================================================= -->
+    <main class="main-content">
+
+        <!-- TOPBAR CONTROL MATRIX -->
+        <header class="topbar">
+            <div class="page-heading">
+                <h1 id="page-title">Dashboard Matrix</h1>
+                <p>Real-time telemetry and multi-account cloud orchestration</p>
+            </div>
+
+            <div class="topbar-actions">
+                <div class="account-selector-wrapper">
+                    <label for="account-select">
+                        <span class="auto-refresh-indicator"></span> AWS Account Node
+                    </label>
+                    <select id="account-select">
+                        <option value="">No account connected</option>
+                    </select>
+                </div>
+
+                <div class="region-wrapper">
+                    <label for="region">Sector Region</label>
+                    <select id="region">
+                        <option value="us-east-1">us-east-1</option>
+                        <option value="us-east-2">us-east-2</option>
+                        <option value="us-west-1">us-west-1</option>
+                        <option value="us-west-2">us-west-2</option>
+                        <option value="ap-south-1">ap-south-1</option>
+                    </select>
+                </div>
+
+                <button id="open-credentials" class="btn primary glow-btn" type="button">
+                    <i class="fa-solid fa-key"></i> Manage Nodes
+                </button>
+            </div>
+        </header>
+
+        <!-- =========================================================
+             1. DASHBOARD PAGE
+        ========================================================= -->
+        <section id="dashboard" class="page active">
+            <div class="selected-account-banner">
+                <div>
+                    <span class="banner-label">Active Matrix Node</span>
+                    <strong id="dashboard-selected-account">No account selected</strong>
+                </div>
+                <div>
+                    <span class="banner-label">Target Region</span>
+                    <strong id="dashboard-selected-region">-</strong>
+                </div>
+                <div id="connection-status" class="connection-status">
+                    Offline
+                </div>
+            </div>
+
+            <div class="page-toolbar">
+                <div>
+                    <h2>Telemetry Overview</h2>
+                    <p id="dashboard-message">Initialize connection to load cloud metrics.</p>
+                </div>
+                <div class="toolbar-actions">
+                    <button id="refresh-dashboard" class="btn secondary" type="button">
+                        <i class="fa-solid fa-rotate"></i> Sync Matrix
+                    </button>
+                    <button id="dashboard-add-account" class="btn primary glow-btn" type="button">
+                        + Add Node
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fa-solid fa-microchip"></i></div>
+                    <div>
+                        <span>Active Instances</span>
+                        <strong id="instance-count">-</strong>
+                    </div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-icon"><i class="fa-solid fa-database"></i></div>
+                    <div>
+                        <span>EBS Volumes</span>
+                        <strong id="volume-count">-</strong>
+                    </div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+                    <div>
+                        <span>Total Volume Storage</span>
+                        <strong id="volume-total-storage">-</strong>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fa-solid fa-box-archive"></i></div>
+                    <div>
+                        <span>Total Snapshots</span>
+                        <strong id="snapshot-count">-</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="content-card">
+                    <div class="card-header">
+                        <div>
+                            <h3>Node Diagnostics</h3>
+                            <p>Authentication parameters</p>
+                        </div>
+                    </div>
+                    <div class="account-summary">
+                        <div class="summary-item">
+                            <span>Account ID</span>
+                            <strong id="summary-account-name">-</strong>
+                        </div>
+                        <div class="summary-item">
+                            <span>Sector</span>
+                            <strong id="summary-region">-</strong>
+                        </div>
+                        <div class="summary-item">
+                            <span>Link Status</span>
+                            <strong id="summary-account-status">Disconnected</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-header">
+                        <div>
+                            <h3>Storage Utilization</h3>
+                            <p>Allocated block capacity</p>
+                        </div>
+                    </div>
+                    <div class="storage-summary">
+                        <div class="storage-number">
+                            <strong id="dashboard-storage-number">0</strong>
+                            <span>GB</span>
+                        </div>
+                        <div class="storage-info">
+                            <span>Total EBS capacity pool</span>
+                            <small id="dashboard-storage-readable">0 GB</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             2. INSTANCES PAGE
+        ========================================================= -->
+        <section id="instances" class="page">
+            <div class="page-toolbar">
+                <div>
+                    <h2>EC2 Instance Fleet</h2>
+                    <p>Live instances discovered across active AWS sector.</p>
+                </div>
+                <button id="fetch-instances" class="btn primary glow-btn" type="button">
+                    <i class="fa-solid fa-rotate"></i> Refresh Fleet
+                </button>
+            </div>
+            <div class="filter-bar">
+                <input id="instance-search" type="search" placeholder="Filter by name, instance ID, state, IP...">
+                <span id="instance-result-count" class="result-count">0 results</span>
+            </div>
+            <div id="instances-table" class="table-container">
+                <div class="empty-state">Initialize node sync to populate instances.</div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             3. VOLUMES PAGE
+        ========================================================= -->
+        <section id="volumes" class="page">
+            <div class="page-toolbar">
+                <div>
+                    <h2>EBS Block Storage</h2>
+                    <p>Attached block volumes and encryption telemetry.</p>
+                </div>
+                <button id="fetch-volumes" class="btn primary glow-btn" type="button">
+                    <i class="fa-solid fa-rotate"></i> Refresh Volumes
+                </button>
+            </div>
+            <div class="volume-summary-grid">
+                <div class="mini-stat">
+                    <span>Total Volumes</span>
+                    <strong id="volumes-page-count">0</strong>
+                </div>
+                <div class="mini-stat">
+                    <span>Allocated Storage</span>
+                    <strong id="volumes-page-total">0 GB</strong>
+                </div>
+                <div class="mini-stat">
+                    <span>Encrypted Sectors</span>
+                    <strong id="volumes-page-encrypted">0</strong>
+                </div>
+            </div>
+            <div id="volumes-table" class="table-container">
+                <div class="empty-state">Initialize node sync to load volume arrays.</div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             4. SNAPSHOTS PAGE
+        ========================================================= -->
+        <section id="snapshots" class="page">
+            <div class="page-toolbar">
+                <div>
+                    <h2>Snapshot Archive</h2>
+                    <p>Point-in-time recovery points stored in S3.</p>
+                </div>
+                <button id="fetch-snapshots" class="btn primary glow-btn" type="button">
+                    <i class="fa-solid fa-rotate"></i> Refresh Archive
+                </button>
+            </div>
+            <div class="filter-bar">
+                <input id="snapshot-search" type="search" placeholder="Search archive records...">
+                <span id="snapshot-result-count" class="result-count">0 results</span>
+            </div>
+            <div id="snapshots-table" class="table-container">
+                <div class="empty-state">Initialize archive synchronization.</div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             5. CREATE SNAPSHOT PAGE
+        ========================================================= -->
+        <section id="create-snapshot" class="page">
+            <div class="page-toolbar">
+                <div>
+                    <h2>Initiate Snapshot Sequence</h2>
+                    <p>Multi-instance concurrent snapshot generation protocol.</p>
+                </div>
+            </div>
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label for="snapshot-instances">Target Instance IDs / Names (One per line)</label>
+                        <textarea id="snapshot-instances" rows="7" placeholder="i-0123456789abcdef0&#10;production-db-node"></textarea>
+                        <small id="snapshot-instance-hint">Scanning fleet availability...</small>
+                    </div>
+                    <div class="form-group full">
+                        <label for="snapshot-description">Job Description / Tags</label>
+                        <textarea id="snapshot-description" rows="3" placeholder="Automated pre-patch snapshot sequence"></textarea>
+                    </div>
+                </div>
+                <div id="snapshot-instance-preview" class="preview-area">
+                    <div class="muted">Awaiting target specification...</div>
+                </div>
+                <div class="form-actions">
+                    <button id="create-snapshots" class="btn primary glow-btn" type="button">
+                        <i class="fa-solid fa-bolt"></i> Execute Snapshot Sequence
+                    </button>
+                </div>
+            </div>
+            <div id="snapshot-result"></div>
+        </section>
+
+        <!-- =========================================================
+             6. SNAPSHOT JOBS DASHBOARD PAGE
+        ========================================================= -->
+        <section id="snapshot-dashboard" class="page">
+            <div class="page-toolbar">
+                <div>
+                    <h2>Job Telemetry & Matrix Monitor</h2>
+                    <p>Live execution threads automatically updated every 15 seconds.</p>
+                </div>
+                <button id="refresh-snapshot-dashboard" class="btn secondary" type="button">
+                    <i class="fa-solid fa-rotate"></i> Force Sync
+                </button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <div class="stat-icon">JOB</div>
+                    <div>
+                        <span>Total Jobs</span>
+                        <strong id="sd-total-jobs">0</strong>
+                    </div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">RUN</div>
+                    <div>
+                        <span>Active Threads</span>
+                        <strong id="sd-running-jobs">0</strong>
+                    </div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-icon">SNP</div>
+                    <div>
+                        <span>Snapshots Queued</span>
+                        <strong id="sd-total-snapshots">0</strong>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">OK</div>
+                    <div>
+                        <span>Completed</span>
+                        <strong id="sd-completed-snapshots">0</strong>
+                    </div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon">ERR</div>
+                    <div>
+                        <span>Failed</span>
+                        <strong id="sd-failed-snapshots">0</strong>
+                    </div>
+                </div>
+            </div>
+            <div id="snapshot-jobs-table" class="table-container"></div>
+        </section>
+
+        <!-- =========================================================
+             7. REVERT SNAPSHOT PAGE
+        ========================================================= -->
+        <section id="revert-snapshot" class="page">
+            <div class="page-toolbar">
+                <div>
+                    <h2>Quantum Revert Protocol</h2>
+                    <p>Parallelized multi-volume detachment, snapshot restore, and boot automation.</p>
+                </div>
+                <div class="toolbar-actions">
+                    <button id="refresh-revert-data" class="btn secondary" type="button">Refresh Matrix</button>
+                </div>
+            </div>
+
+            <!-- AWS Account Label for Revert Script Bindings -->
+            <div class="form-card" style="margin-bottom: 20px; padding: 15px;">
+                <div class="form-group" style="margin: 0;">
+                    <label for="restore-account-input">Security Node Scope / Profile ID</label>
+                    <input type="text" id="restore-account-input" class="form-control" value="cyber-default-node" />
+                </div>
+            </div>
+
+            <div class="restore-layout">
+                <!-- WORKFLOW FORM -->
+                <div class="form-card restore-card">
+                    <div class="restore-header">
+                        <div class="restore-icon"><i class="fa-solid fa-rotate-left"></i></div>
+                        <div>
+                            <h3>Volume Revert Matrix</h3>
+                            <p>Configure snapshot recovery mapping parameters.</p>
+                        </div>
+                    </div>
+
+                    <!-- STEP 1 -->
+                    <div class="restore-step active" style="margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label for="restore-region-select">1. Sector Region</label>
+                            <select id="restore-region-select" class="form-control">
+                                <option value="">Select sector region</option>
+                                <option value="us-east-1">us-east-1</option>
+                                <option value="us-east-2">us-east-2</option>
+                                <option value="us-west-1">us-west-1</option>
+                                <option value="us-west-2">us-west-2</option>
+                                <option value="ap-south-1">ap-south-1</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2 -->
+                    <div class="restore-step" style="margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label for="restore-instance-select">2. Target Instance</label>
+                            <select id="restore-instance-select" class="form-control" disabled>
+                                <option value="">Select region first</option>
+                            </select>
+                        </div>
+                        <div id="restore-instance-info" class="restore-preview"></div>
+                    </div>
+
+                    <!-- STEP 3 -->
+                    <div class="restore-step" style="margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label for="restore-volume-select">3. Volume(s) to Replace (Hold Ctrl/Cmd for multiple)</label>
+                            <select id="restore-volume-select" class="form-control" multiple size="4" disabled>
+                                <option value="">Select an instance first</option>
+                            </select>
+                        </div>
+                        <div id="restore-volume-info" class="restore-preview"></div>
+                    </div>
+
+                    <!-- STEP 4 -->
+                    <div class="restore-step" style="margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label for="restore-snapshot-select">4. Snapshot Mapping</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="restore-snapshot-select" class="form-control" disabled style="flex: 1;">
+                                    <option value="">Select volume(s) first</option>
+                                </select>
+                                <button type="button" id="add-to-queue-btn" class="btn secondary" style="white-space: nowrap; padding: 10px 16px;" disabled>Add Task</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QUEUE MANAGEMENT PANEL -->
+                    <div class="form-card restore-queue-panel" style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0; font-size: 14px;">Revert Execution Queue</h4>
+                            <span id="queue-counter-badge" class="status pending">0 tasks queued</span>
+                        </div>
+                        <div id="restore-queue-list" style="max-height: 150px; overflow-y: auto; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 6px; padding: 8px; background: rgba(0,0,0,0.3);">
+                            <p id="queue-empty-text" style="color: var(--muted); font-size: 12px; text-align: center; margin: 10px 0;">No restore tasks staged in queue.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 20px;">
+                        <button id="restore-snapshot-button" class="btn primary glow-btn" type="button" disabled>
+                            <i class="fa-solid fa-triangle-exclamation"></i> Execute Parallel Revert
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SEQUENCE INFORMATION CARD -->
+                <div class="content-card restore-info-card">
+                    <div class="card-header">
+                        <div>
+                            <h3>Protocol Sequence</h3>
+                            <p>Automated orchestration stages</p>
+                        </div>
+                    </div>
+                    <div class="restore-info-list">
+                        <div class="restore-info-item">
+                            <div class="restore-info-number">1</div>
+                            <div>
+                                <strong>Halt Instance Power</strong>
+                                <p>Gracefully shuts down the target EC2 node.</p>
+                            </div>
+                        </div>
+                        <div class="restore-info-item">
+                            <div class="restore-info-number">2</div>
+                            <div>
+                                <strong>Detach Block Volume</strong>
+                                <p>Removes compromised or outdated EBS volume safely.</p>
+                            </div>
+                        </div>
+                        <div class="restore-info-item">
+                            <div class="restore-info-number">3</div>
+                            <div>
+                                <strong>Synthesize Replacement</strong>
+                                <p>Spins up a new EBS volume from snapshot archive.</p>
+                            </div>
+                        </div>
+                        <div class="restore-info-item">
+                            <div class="restore-info-number">4</div>
+                            <div>
+                                <strong>Attach & Re-Energize</strong>
+                                <p>Mounts the new volume and boots the instance.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =========================================================
+         ACCOUNT MANAGEMENT MODAL
+    ========================================================= -->
+    <div id="credential-modal" class="modal-overlay">
+        <div class="modal account-modal">
+            <div class="modal-header">
+                <div>
+                    <h2>AWS Security Nodes</h2>
+                    <p>Configure credentials and access keys.</p>
+                </div>
+                <button id="close-credentials" class="modal-close" type="button" aria-label="Close">×</button>
+            </div>
+            <div class="account-list-header"><strong>Active Registered Nodes</strong></div>
+            <div id="account-list" class="account-list"></div>
+            <div class="divider"></div>
+            <div class="modal-form">
+                <h3>Register / Update Node</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="account-name">Node Label</label>
+                        <input id="account-name" type="text" placeholder="Production-Cluster-01">
+                    </div>
+                    <div class="form-group">
+                        <label for="account-region">Default Region</label>
+                        <select id="account-region">
+                            <option value="us-east-1">us-east-1</option>
+                            <option value="us-east-2">us-east-2</option>
+                            <option value="us-west-1">us-west-1</option>
+                            <option value="us-west-2">us-west-2</option>
+                            <option value="ap-south-1">ap-south-1</option>
+                        </select>
+                    </div>
+                    <div class="form-group full">
+                        <label for="access-key">AWS Access Key ID</label>
+                        <input id="access-key" type="text" autocomplete="off">
+                    </div>
+                    <div class="form-group full">
+                        <label for="secret-key">AWS Secret Access Key</label>
+                        <input id="secret-key" type="password" autocomplete="new-password">
+                    </div>
+                    <div class="form-group full">
+                        <label for="session-token">Session Token <span class="optional">(Optional)</span></label>
+                        <textarea id="session-token" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="account-cancel" class="btn secondary" type="button">Cancel</button>
+                    <button id="account-add" class="btn primary glow-btn" type="button">Save Node</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         JOB DETAILS MODAL
+    ========================================================= -->
+    <div id="job-details-modal" class="modal-overlay">
+        <div class="modal job-modal">
+            <div class="modal-header">
+                <div><h2>Snapshot Thread Telemetry</h2></div>
+                <button id="close-job-details" class="modal-close" type="button" aria-label="Close">×</button>
+            </div>
+            <div id="job-details-content"></div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         APPLICATION SCRIPTS (YOUR EXACT app_v1_2.js & revert-snapshot.js)
+    ========================================================= -->
+    <script src="js/app.js"></script>
+    <script src="js/revert-snapshot.js"></script>
+    
+    <!-- AWS SDK MODULE FALLBACKS -->
+    <script type="module">
+        import * as EC2Module from "https://cdn.jsdelivr.net/npm/@aws-sdk/client-ec2/+esm";
+        window.EC2Client = EC2Module.EC2Client;
+        window.DescribeInstancesCommand = EC2Module.DescribeInstancesCommand;
+        window.DescribeVolumesCommand = EC2Module.DescribeVolumesCommand;
+        window.DescribeSnapshotsCommand = EC2Module.DescribeSnapshotsCommand;
+        window.StopInstancesCommand = EC2Module.StopInstancesCommand;
+        window.StartInstancesCommand = EC2Module.StartInstancesCommand;
+        window.DetachVolumeCommand = EC2Module.DetachVolumeCommand;
+        window.AttachVolumeCommand = EC2Module.AttachVolumeCommand;
+        window.CreateVolumeCommand = EC2Module.CreateVolumeCommand;
+    </script>
+</body>
+</html>

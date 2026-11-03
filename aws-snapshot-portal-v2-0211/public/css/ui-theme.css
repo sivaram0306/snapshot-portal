@@ -1,0 +1,631 @@
+/* =========================================================
+   ui-theme.css
+   Visual refresh layered on top of style.css.
+   Load order: style.css -> ui-theme.css -> ui-enhancements.js
+   Overrides only. No existing class is removed or renamed.
+========================================================= */
+
+/* ---------- Light tokens (cover both token sets in style.css) ---------- */
+:root {
+    --bg: #f4f6fb;
+    --sidebar: #0f172a;
+    --sidebar-hover: rgba(255, 255, 255, 0.06);
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --card: #ffffff;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --purple: #7c3aed;
+    --surface-secondary: #f8fafc;
+    --border-color: #e2e8f0;
+    --muted-color: #64748b;
+    --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 20px rgba(15, 23, 42, 0.06);
+    --radius-lg: 14px;
+    --radius-md: 10px;
+
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --accent-color: #2563eb;
+    --accent-hover: #1d4ed8;
+    --bg-color: #f4f6fb;
+    --card-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --danger-color: #dc2626;
+    --success-color: #16a34a;
+    --radius: 10px;
+}
+
+/* ---------- Dark tokens ---------- */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0b1120;
+    --sidebar: #070d1a;
+    --sidebar-hover: rgba(255, 255, 255, 0.05);
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #1e293b;
+    --card: #111a2e;
+    --surface-secondary: #0f1729;
+    --border-color: #1e293b;
+    --muted-color: #94a3b8;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --accent-color: #3b82f6;
+    --accent-hover: #2563eb;
+    --bg-color: #0b1120;
+    --card-bg: #111a2e;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --danger-color: #f87171;
+    --success-color: #4ade80;
+}
+
+/* ---------- Base ---------- */
+html {
+    color-scheme: light;
+}
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+    background: linear-gradient(180deg, var(--sidebar) 0%, #0b1224 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    transition: width 0.2s ease;
+}
+
+.nav-item {
+    border-radius: var(--radius-md);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav-item:hover {
+    background: var(--sidebar-hover);
+}
+
+.nav-item.active {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.main-content {
+    transition: margin-left 0.2s ease;
+}
+
+/* Collapsed (desktop) */
+body.sidebar-collapsed .sidebar {
+    width: 76px;
+}
+
+body.sidebar-collapsed .main-content {
+    margin-left: 76px;
+}
+
+body.sidebar-collapsed .brand {
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+body.sidebar-collapsed .brand-info,
+body.sidebar-collapsed .sidebar-footer {
+    display: none;
+}
+
+body.sidebar-collapsed .nav-item {
+    font-size: 0;
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+body.sidebar-collapsed .nav-item span {
+    font-size: 18px;
+}
+
+body.sidebar-collapsed .sidebar-toggle {
+    transform: rotate(180deg);
+}
+
+/* ---------- Topbar ---------- */
+.topbar {
+    flex-wrap: wrap;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ---------- Icon buttons ---------- */
+.icon-btn,
+.menu-toggle,
+.sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.icon-btn:hover,
+.menu-toggle:hover {
+    border-color: var(--primary);
+}
+
+.menu-toggle {
+    display: none;
+}
+
+.sidebar-toggle {
+    margin-left: auto;
+    width: 30px;
+    height: 30px;
+    background: var(--sidebar-hover);
+    border-color: transparent;
+    color: #cbd5e1;
+    transition: transform 0.2s ease, background 0.15s;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+kbd {
+    font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    padding: 3px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface-secondary);
+    color: var(--muted);
+    box-shadow: inset 0 -1px 0 var(--border);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: background 0.15s, box-shadow 0.15s, transform 0.05s, opacity 0.15s;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn.primary {
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3);
+}
+
+.btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ---------- Cards and surfaces ---------- */
+.content-card,
+.form-card,
+.stat-card,
+.table-container,
+.selected-account-banner,
+.mini-stat,
+.restore-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+
+.stat-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+/* ---------- Dashboard quick actions (injected by ui-enhancements.js) ---------- */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+    margin: 0 0 20px;
+}
+
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+}
+
+.quick-action:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.qa-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--primary);
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* ---------- Tables ---------- */
+th {
+    background: var(--surface-secondary);
+    color: var(--muted);
+}
+
+td {
+    border-bottom-color: var(--border);
+}
+
+tbody tr:hover td {
+    background: rgba(37, 99, 235, 0.04);
+}
+
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+th.sortable:hover {
+    color: var(--text);
+}
+
+th.sortable::after {
+    content: "↕";
+    margin-left: 6px;
+    opacity: 0.35;
+    font-size: 11px;
+}
+
+th[aria-sort="ascending"]::after,
+th[aria-sort="descending"]::after {
+    opacity: 1;
+    color: var(--primary);
+}
+
+th[aria-sort="ascending"]::after {
+    content: "▲";
+}
+
+th[aria-sort="descending"]::after {
+    content: "▼";
+}
+
+td.copyable {
+    cursor: copy;
+}
+
+td.copyable:hover {
+    color: var(--primary);
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+}
+
+/* ---------- Inputs ---------- */
+input[type="search"],
+input[type="text"],
+select,
+textarea {
+    border-radius: var(--radius-md);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    outline: none;
+}
+
+/* ---------- Command palette and shortcut help ---------- */
+.cmdk-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12vh 16px 16px;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+}
+
+.cmdk-overlay.show {
+    display: flex;
+}
+
+.cmdk {
+    width: min(580px, 100%);
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.cmdk-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px 18px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+}
+
+.cmdk-input:focus {
+    box-shadow: none;
+}
+
+.cmdk-list {
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 6px;
+}
+
+.cmdk-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cmdk-item small {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.cmdk-item[aria-selected="true"] {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.cmdk-item[aria-selected="true"] small {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.cmdk-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.cmdk-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-secondary);
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.cmdk-footer span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cmdk-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px 12px 18px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 700;
+}
+
+.help-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.help-row:last-child {
+    border-bottom: 0;
+}
+
+.help-keys {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    color: var(--muted);
+}
+
+/* ---------- Toast ---------- */
+.toast {
+    border-radius: var(--radius-md);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+}
+
+/* ---------- Mobile navigation drawer ---------- */
+.nav-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(15, 23, 42, 0.45);
+}
+
+@media (max-width: 900px) {
+    .menu-toggle {
+        display: inline-flex;
+    }
+
+    .sidebar,
+    body.sidebar-collapsed .sidebar {
+        width: 260px;
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
+        z-index: 60;
+    }
+
+    body.nav-open .sidebar {
+        transform: translateX(0);
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .main-content,
+    body.sidebar-collapsed .main-content {
+        margin-left: 0 !important;
+    }
+
+    body.sidebar-collapsed .brand-info,
+    body.sidebar-collapsed .sidebar-footer {
+        display: block;
+    }
+
+    body.sidebar-collapsed .nav-item {
+        font-size: inherit;
+        justify-content: flex-start;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    body.sidebar-collapsed .nav-item span {
+        font-size: inherit;
+    }
+
+    body.sidebar-collapsed .brand {
+        justify-content: flex-start;
+    }
+
+    body.sidebar-collapsed .sidebar-toggle {
+        transform: none;
+    }
+
+    body.nav-open .nav-backdrop {
+        display: block;
+    }
+
+    .quick-actions {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .search-trigger kbd {
+        display: none;
+    }
+}
+
+/* ---------- Dark mode overrides for hard-coded light surfaces ---------- */
+:root[data-theme="dark"] .sidebar {
+    background: linear-gradient(180deg, #070d1a 0%, #050a14 100%);
+}
+
+:root[data-theme="dark"] th {
+    background: var(--surface-secondary);
+    color: var(--muted);
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+    background: #0b1222;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+:root[data-theme="dark"] .modal,
+:root[data-theme="dark"] .account-modal,
+:root[data-theme="dark"] .job-modal {
+    background: var(--card);
+    color: var(--text);
+}
+
+:root[data-theme="dark"] tbody tr:hover td {
+    background: rgba(59, 130, 246, 0.08);
+}
+
+/* ---------- Motion preferences ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
+
