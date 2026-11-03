@@ -48,7 +48,14 @@
     </div>
 
     <nav class="navigation">
-
+   <button
+    class="nav-item"
+    data-page="centralized-dashboard"
+    type="button"
+>
+    <span>🌐</span>
+    Global Dashboard
+</button>
         <button
             class="nav-item active"
             data-page="dashboard"
@@ -181,7 +188,73 @@
 
     </header>
 
+<!-- =================================================
+     CENTRALIZED MULTI-ACCOUNT DASHBOARD
+================================================== -->
+<section id="centralized-dashboard" class="page">
 
+    <div class="page-toolbar">
+        <div>
+            <h2>Global Multi-Account Dashboard</h2>
+            <p>Aggregated telemetry and health status across all connected AWS accounts.</p>
+        </div>
+        <div class="toolbar-actions">
+            <button id="refresh-centralized-dashboard" class="btn primary" type="button">
+                Refresh Global Data
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">EC2</div>
+            <div>
+                <span>Total Instances</span>
+                <strong id="cd-total-instances">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card purple">
+            <div class="stat-icon">EBS</div>
+            <div>
+                <span>Total Volumes</span>
+                <strong id="cd-total-volumes">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card orange">
+            <div class="stat-icon">SNP</div>
+            <div>
+                <span>Total Snapshots</span>
+                <strong id="cd-total-snapshots">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card green">
+            <div class="stat-icon">GB</div>
+            <div>
+                <span>Total Storage Capacity</span>
+                <strong id="cd-total-storage">0 GB</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card" style="margin-top: 24px;">
+        <div class="card-header">
+            <div>
+                <h3>Connected Accounts Telemetry</h3>
+                <p>Real-time resource breakdown per account and region</p>
+            </div>
+        </div>
+
+        <div id="centralized-accounts-table" class="table-container">
+            <div class="empty-state">
+                Loading multi-account data...
+            </div>
+        </div>
+    </div>
+
+</section>
     <!-- =================================================
          DASHBOARD
     ================================================== -->
@@ -616,87 +689,78 @@
     </section>
 
 
-    <!-- =================================================
-         SNAPSHOT DASHBOARD
-    ================================================== -->
+<!-- =================================================
+     SNAPSHOT DASHBOARD
+================================================== -->
+<section id="snapshot-dashboard" class="page">
 
-    <section id="snapshot-dashboard" class="page">
+    <div class="page-toolbar">
+        <div>
+            <h2>Snapshot Jobs</h2>
+            <p>Monitor real-time replication status and multi-account sync progress.</p>
+        </div>
 
-        <div class="page-toolbar">
-
-            <div>
-                <h2>Snapshot Jobs</h2>
-
-                <p>
-                    Snapshot jobs are automatically refreshed every 15 seconds.
-                </p>
+        <div class="toolbar-actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <!-- Auto-refresh Toggle Switch -->
+            <div style="display: flex; align-items: center; gap: 6px; background: rgba(30, 41, 59, 0.5); padding: 6px 12px; border-radius: 8px; border: 1px solid #334155;">
+                <input type="checkbox" id="auto-refresh-toggle" checked style="cursor: pointer; width: 16px; height: 16px;">
+                <label for="auto-refresh-toggle" style="font-size: 11px; font-weight: 600; cursor: pointer; color: #f8fafc;">Auto-Refresh (15s)</label>
+                <span id="refresh-countdown-badge" style="font-size: 10px; font-family: monospace; color: #38bdf8; margin-left: 4px;">15s</span>
             </div>
 
-            <button
-                id="refresh-snapshot-dashboard"
-                class="btn secondary"
-                type="button"
-            >
-                Refresh Now
+            <!-- Refresh Button -->
+            <button id="refresh-snapshot-dashboard" class="btn primary" type="button" style="display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-rotate" id="refresh-icon"></i> Refresh Now
             </button>
+        </div>
+    </div>
 
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">JOB</div>
+            <div>
+                <span>Total Jobs</span>
+                <strong id="sd-total-jobs">0</strong>
+            </div>
         </div>
 
-        <div class="stats-grid">
-
-            <div class="stat-card blue">
-                <div class="stat-icon">JOB</div>
-
-                <div>
-                    <span>Total Jobs</span>
-                    <strong id="sd-total-jobs">0</strong>
-                </div>
+        <div class="stat-card orange">
+            <div class="stat-icon">RUN</div>
+            <div>
+                <span>Running</span>
+                <strong id="sd-running-jobs">0</strong>
             </div>
-
-            <div class="stat-card orange">
-                <div class="stat-icon">RUN</div>
-
-                <div>
-                    <span>Running</span>
-                    <strong id="sd-running-jobs">0</strong>
-                </div>
-            </div>
-
-            <div class="stat-card purple">
-                <div class="stat-icon">SNP</div>
-
-                <div>
-                    <span>Total Snapshots</span>
-                    <strong id="sd-total-snapshots">0</strong>
-                </div>
-            </div>
-
-            <div class="stat-card green">
-                <div class="stat-icon">OK</div>
-
-                <div>
-                    <span>Completed</span>
-                    <strong id="sd-completed-snapshots">0</strong>
-                </div>
-            </div>
-
-            <div class="stat-card red">
-                <div class="stat-icon">ERR</div>
-
-                <div>
-                    <span>Failed</span>
-                    <strong id="sd-failed-snapshots">0</strong>
-                </div>
-            </div>
-
         </div>
 
-        <div
-            id="snapshot-jobs-table"
-            class="table-container"
-        ></div>
+        <div class="stat-card purple">
+            <div class="stat-icon">SNP</div>
+            <div>
+                <span>Total Snapshots</span>
+                <strong id="sd-total-snapshots">0</strong>
+            </div>
+        </div>
 
-    </section>
+        <div class="stat-card green">
+            <div class="stat-icon">OK</div>
+            <div>
+                <span>Completed</span>
+                <strong id="sd-completed-snapshots">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card red">
+            <div class="stat-icon">ERR</div>
+            <div>
+                <span>Failed</span>
+                <strong id="sd-failed-snapshots">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div id="snapshot-jobs-table" class="table-container"></div>
+
+</section> 
+
 <section id="revert-snapshot" class="page">
 
     <div class="page-toolbar">
@@ -1013,15 +1077,8 @@
 
                         <select id="account-region">
 
-                            <option value="us-east-1">us-east-1</option>
                             <option value="us-east-2">us-east-2</option>
                             <option value="us-west-1">us-west-1</option>
-                            <option value="us-west-2">us-west-2</option>
-                            <option value="ap-south-1">ap-south-1</option>
-                            <option value="ap-southeast-1">ap-southeast-1</option>
-                            <option value="ap-southeast-2">ap-southeast-2</option>
-                            <option value="eu-west-1">eu-west-1</option>
-                            <option value="eu-central-1">eu-central-1</option>
 
                         </select>
 
@@ -1136,6 +1193,25 @@
 
 </main>
 
+<!-- =====================================================
+     SESSION EXPIRED / RE-AUTHENTICATION MODAL
+===================================================== -->
+<div id="session-expired-modal" class="modal-overlay">
+    <div class="modal" style="max-width: 480px; text-align: center; padding: 24px;">
+        <div style="font-size: 42px; color: var(--danger, #f87171); margin-bottom: 12px;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h2 style="margin: 0 0 8px; color: #ffffff; font-size: 20px;">AWS Session Expired</h2>
+        <p style="color: var(--muted, #94a3b8); font-size: 13px; margin-bottom: 20px;">
+            Your AWS security token or access credentials have expired or are unauthorized. Please update your session credentials to continue.
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button type="button" id="session-expired-reauth-btn" class="btn primary" style="width: 100%;">
+                Update Credentials Now
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- =====================================================
      APPLICATION JAVASCRIPT

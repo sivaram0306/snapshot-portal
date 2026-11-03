@@ -2986,6 +2986,92 @@ async function start() {
     }
 }
 
+/* =========================================================
+   CENTRALIZED MULTI-ACCOUNT DASHBOARD ENDPOINT
+========================================================= */
+app.post(
+    "/api/aws/centralized-dashboard",
+    async (req, res) => {
+        try {
+            const { accounts } = req.body;
+            if (!Array.isArray(accounts) || !accounts.length) {
+                return res.json({ success: true, summary: { instances: 0, volumes: 0, snapshots: 0, storageGB: 0 }, accountsData: [] });
+            }
 
+            let totalInstances = 0;
+            let totalVolumes = 0;
+            let totalSnapshots = 0;
+            let totalStorageGB = 0;
+            const accountsData = [];
+
+            for (const acc of accounts) {
+                try {
+                    const ec2 = createEc2Client({
+                        accessKeyId: acc.accessKeyId,
+                        secretAccessKey: acc.secretAccessKey,
+                        sessionToken: acc.sessionToken || "",
+                        region: acc.region || "us-west-1"
+                    });
+
+                    const [instRes, volRes, snapRes] = await Promise.all([
+                        ec2.send(new DescribeInstancesCommand({ Filters: [{ Name: "instance-state-name", Values: ["running", "stopped"] }] })),
+                        ec2.send(new DescribeVolumesCommand({})),
+                        ec2.send(new DescribeSnapshotsCommand({ OwnerIds: ["self"] }))
+                    ]);
+
+                    let accStorage = 0;
+                    (volRes.Volumes || []).forEach(v => { accStorage += (v.Size || 0); });
+
+                    const instCount = (instRes.Reservations || []).reduce((accSum, r) => accSum + (r.Instances?.length || 0), 0);
+                    const volCount = (volRes.Volumes || []).length;
+                    const snapCount = (snapRes.Snapshots || []).length;
+
+                    totalInstances += instCount;
+                    totalVolumes += volCount;
+                    totalSnapshots += snapCount;
+                    totalStorageGB += accStorage;
+
+                    accountsData.push({
+                        id: acc.id,
+                        name: acc.name,
+                        region: acc.region || "us-west-1",
+                        status: "connected",
+                        instances: instCount,
+                        volumes: volCount,
+                        snapshots: snapCount,
+                        storageGB: accStorage
+                    });
+                } catch (err) {
+                    accountsData.push({
+                        id: acc.id,
+                        name: acc.name,
+                        region: acc.region || "us-west-1",
+                        status: "error",
+                        error: err.message,
+                        instances: 0,
+                        volumes: 0,
+                        snapshots: 0,
+                        storageGB: 0
+                    });
+                }
+            }
+
+            res.json({
+                success: true,
+                summary: {
+                    instances: totalInstances,
+                    volumes: totalVolumes,
+                    snapshots: totalSnapshots,
+                    storageGB: totalStorageGB,
+                    accountCount: accounts.length
+                },
+                accountsData
+            });
+        } catch (error) {
+            console.error("Centralized dashboard error:", error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    }
+);
 start();
 

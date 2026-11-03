@@ -470,31 +470,14 @@ function isAwsAuthenticationError(data) {
         return false;
     }
 
-    const code =
-        data.code ||
-        data.errorCode ||
-        data.awsCode ||
-        data.awsError?.code ||
-        data.error?.code ||
-        "";
-
-    const message =
-        typeof data.error === "string"
-            ? data.error
-            : (
-                data.message ||
-                data.error?.message ||
-                ""
-            );
-
-    if (
-        AWS_AUTH_ERROR_CODES.includes(code)
-    ) {
+    const code = data.code || data.errorCode || data.awsCode || data.awsError?.code || data.error?.code || "";
+    const message = typeof data.error === "string" ? data.error : (data.message || data.error?.message || String(data || ""));
+    
+    if (AWS_AUTH_ERROR_CODES.includes(code)) {
         return true;
     }
 
-    return /ExpiredToken|InvalidClientTokenId|UnrecognizedClient|InvalidAccessKeyId|SignatureDoesNotMatch/i
-        .test(String(message));
+    return /ExpiredToken|InvalidClientTokenId|UnrecognizedClient|InvalidAccessKeyId|SignatureDoesNotMatch|Request has expired/i.test(message);
 }
 
 function openCredentialsForAwsError() {
@@ -504,10 +487,13 @@ function openCredentialsForAwsError() {
 
     credentialPopupOpening = true;
 
-    renderAccountList();
-
-    $("credential-modal")
-        ?.classList.add("show");
+    const expiryModal = document.getElementById("session-expired-modal");
+    if (expiryModal) {
+        expiryModal.classList.add("show");
+    } else {
+        renderAccountList();
+        $("credential-modal")?.classList.add("show");
+    }
 
     setTimeout(() => {
         credentialPopupOpening = false;
@@ -527,15 +513,10 @@ function openCredentialsForAwsError() {
 async function api(url, options = {}) {
     const config = {
         ...options,
-
         headers: {
             ...(options.body
-                ? {
-                    "Content-Type":
-                        "application/json"
-                }
+                ? { "Content-Type": "application/json" }
                 : {}),
-
             ...(options.headers || {})
         }
     };
@@ -543,97 +524,53 @@ async function api(url, options = {}) {
     let response;
 
     try {
-        response =
-            await fetch(url, config);
-
+        response = await fetch(url, config);
     } catch (error) {
-        console.error(
-            "API network error:",
-            error
-        );
-
-        throw new Error(
-            "Unable to connect to the server."
-        );
+        console.error("API network error:", error);
+        throw new Error("Unable to connect to the server.");
     }
 
-    const contentType =
-        response.headers.get("content-type") ||
-        "";
-
+    const contentType = response.headers.get("content-type") || "";
     let data;
 
     try {
-        if (
-            contentType
-                .toLowerCase()
-                .includes("application/json")
-        ) {
+        if (contentType.toLowerCase().includes("application/json")) {
             data = await response.json();
         } else {
             const text = await response.text();
+            console.error(`Unexpected non-JSON response from ${url}:`, text);
 
-            console.error(
-                `Unexpected non-JSON response from ${url}:`,
-                text
-            );
-
-            if (isAwsAuthenticationError({ message: text })) {
+            if (isAwsAuthenticationError({ message: text }) || text.includes("Request has expired")) {
                 openCredentialsForAwsError();
             }
 
-            throw new Error(
-                text ||
-                `Server returned HTTP ${response.status}`
-            );
+            throw new Error(text || `Server returned HTTP ${response.status}`);
         }
-
     } catch (error) {
-        console.error(
-            "API response parsing error:",
-            error
-        );
+        console.error("API response parsing error:", error);
 
-        if (
-            error instanceof Error &&
-            error.message
-        ) {
-            if (isAwsAuthenticationError(error)) {
+        if (error instanceof Error && error.message) {
+            if (isAwsAuthenticationError(error) || error.message.includes("Request has expired")) {
                 openCredentialsForAwsError();
             }
             throw error;
         }
 
-        throw new Error(
-            `Server returned HTTP ${response.status}`
-        );
+        throw new Error(`Server returned HTTP ${response.status}`);
     }
 
-    if (
-        !data ||
-        typeof data !== "object"
-    ) {
-        throw new Error(
-            `Invalid server response from ${url}`
-        );
+    if (!data || typeof data !== "object") {
+        throw new Error(`Invalid server response from ${url}`);
     }
 
-    if (
-        isAwsAuthenticationError(data)
-    ) {
+    if (isAwsAuthenticationError(data) || (data.error && String(data.error).includes("Request has expired"))) {
         openCredentialsForAwsError();
-
-        throw new Error(
-            "AWS credentials expired or session is invalid."
-        );
+        throw new Error("AWS credentials expired or session is invalid.");
     }
 
-    if (
-        !response.ok ||
-        data.success === false
-    ) {
+    if (!response.ok || data.success === false) {
         const errorMsg = data.error || data.message || `HTTP ${response.status}`;
-        if (isAwsAuthenticationError({ message: errorMsg, code: data.code })) {
+        if (isAwsAuthenticationError({ message: errorMsg, code: data.code }) || String(errorMsg).includes("Request has expired")) {
             openCredentialsForAwsError();
         }
         throw new Error(errorMsg);
@@ -649,215 +586,95 @@ async function api(url, options = {}) {
 
 function openCredentials() {
     state.editingAccountId = null;
-
     clearAccountForm();
 
-    const button =
-        $("account-add");
-
+    const button = $("account-add");
     if (button) {
-        button.textContent =
-            "Add Account";
+        button.textContent = "Add Account";
     }
 
     renderAccountList();
-
-    $("credential-modal")
-        ?.classList.add("show");
+    $("credential-modal")?.classList.add("show");
 }
 
 function closeCredentials() {
-    $("credential-modal")
-        ?.classList.remove("show");
-
+    $("credential-modal")?.classList.remove("show");
     state.editingAccountId = null;
-
     clearAccountForm();
 
-    const button =
-        $("account-add");
-
+    const button = $("account-add");
     if (button) {
-        button.textContent =
-            "Add Account";
+        button.textContent = "Add Account";
     }
 }
 
 function clearAccountForm() {
-    if ($("account-name")) {
-        $("account-name").value = "";
-    }
-
-    if ($("access-key")) {
-        $("access-key").value = "";
-    }
-
-    if ($("secret-key")) {
-        $("secret-key").value = "";
-    }
-
-    if ($("session-token")) {
-        $("session-token").value = "";
-    }
-
-    if ($("account-region")) {
-        $("account-region").value =
-            "us-west-1";
-    }
+    if ($("account-name")) $("account-name").value = "";
+    if ($("access-key")) $("access-key").value = "";
+    if ($("secret-key")) $("secret-key").value = "";
+    if ($("session-token")) $("session-token").value = "";
+    if ($("account-region")) $("account-region").value = "us-west-1";
 }
 
 function editAccount(accountId) {
-    const account =
-        state.accounts.find(
-            item =>
-                item &&
-                item.id === accountId
-        );
+    const account = state.accounts.find(item => item && item.id === accountId);
+    if (!account) return;
 
-    if (!account) {
-        return;
-    }
+    state.editingAccountId = account.id;
 
-    state.editingAccountId =
-        account.id;
+    if ($("account-name")) $("account-name").value = account.name || "";
+    if ($("access-key")) $("access-key").value = account.accessKeyId || "";
+    if ($("secret-key")) $("secret-key").value = account.secretAccessKey || "";
+    if ($("session-token")) $("session-token").value = account.sessionToken || "";
+    if ($("account-region")) $("account-region").value = account.region || "us-west-1";
 
-    if ($("account-name")) {
-        $("account-name").value =
-            account.name || "";
-    }
-
-    if ($("access-key")) {
-        $("access-key").value =
-            account.accessKeyId || "";
-    }
-
-    if ($("secret-key")) {
-        $("secret-key").value =
-            account.secretAccessKey || "";
-    }
-
-    if ($("session-token")) {
-        $("session-token").value =
-            account.sessionToken || "";
-    }
-
-    if ($("account-region")) {
-        $("account-region").value =
-            account.region ||
-            "us-west-1";
-    }
-
-    const button =
-        $("account-add");
-
+    const button = $("account-add");
     if (button) {
-        button.textContent =
-            "Update Account";
+        button.textContent = "Update Account";
     }
 
-    $("credential-modal")
-        ?.classList.add("show");
+    $("credential-modal")?.classList.add("show");
 }
 
 function saveAccount() {
-    const name =
-        $("account-name")
-            ?.value
-            .trim() || "";
-
-    const accessKeyId =
-        $("access-key")
-            ?.value
-            .trim() || "";
-
-    const secretAccessKey =
-        $("secret-key")
-            ?.value
-            .trim() || "";
-
-    const sessionToken =
-        $("session-token")
-            ?.value
-            .trim() || "";
-
-    const region =
-        $("account-region")
-            ?.value ||
-        "us-west-1";
+    const name = $("account-name")?.value.trim() || "";
+    const accessKeyId = $("access-key")?.value.trim() || "";
+    const secretAccessKey = $("secret-key")?.value.trim() || "";
+    const sessionToken = $("session-token")?.value.trim() || "";
+    const region = $("account-region")?.value || "us-west-1";
 
     if (!name) {
-        toast(
-            "Enter an account name.",
-            "error"
-        );
-
+        toast("Enter an account name.", "error");
         return;
     }
 
     if (!accessKeyId) {
-        toast(
-            "Enter the AWS Access Key ID.",
-            "error"
-        );
-
+        toast("Enter the AWS Access Key ID.", "error");
         return;
     }
 
     if (!secretAccessKey) {
-        toast(
-            "Enter the AWS Secret Access Key.",
-            "error"
-        );
-
+        toast("Enter the AWS Secret Access Key.", "error");
         return;
     }
 
     if (state.editingAccountId) {
-        const account =
-            state.accounts.find(
-                item =>
-                    item &&
-                    item.id ===
-                    state.editingAccountId
-            );
+        const account = state.accounts.find(item => item && item.id === state.editingAccountId);
+        if (!account) return;
 
-        if (!account) {
-            return;
-        }
+        account.name = name;
+        account.accessKeyId = accessKeyId;
+        account.secretAccessKey = secretAccessKey;
+        account.sessionToken = sessionToken;
+        account.region = region;
+        state.activeAccountId = account.id;
 
-        account.name =
-            name;
-
-        account.accessKeyId =
-            accessKeyId;
-
-        account.secretAccessKey =
-            secretAccessKey;
-
-        account.sessionToken =
-            sessionToken;
-
-        account.region =
-            region;
-
-        state.activeAccountId =
-            account.id;
-
-        toast(
-            "AWS account updated successfully.",
-            "success"
-        );
-
+        toast("AWS account updated successfully.", "success");
     } else {
         const account = {
-            id:
-                typeof crypto !== "undefined" &&
-                typeof crypto.randomUUID === "function"
-                    ? crypto.randomUUID()
-                    : `${Date.now()}-${Math.random()
-                        .toString(36)
-                        .slice(2)}`,
-
+            id: typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
             name,
             accessKeyId,
             secretAccessKey,
@@ -866,29 +683,19 @@ function saveAccount() {
         };
 
         state.accounts.push(account);
+        state.activeAccountId = account.id;
 
-        state.activeAccountId =
-            account.id;
-
-        toast(
-            "AWS account added successfully.",
-            "success"
-        );
+        toast("AWS account added successfully.", "success");
     }
 
     saveAccounts();
-
     updateAccountSelector();
     updateRegionFromAccount();
     updateSelectedAccountUI();
-
     renderAccountList();
-
     clearAwsData();
     resetRevertState();
-
     closeCredentials();
-
     showPage(state.currentPage);
 }
 
@@ -908,186 +715,82 @@ function loadInstancesForRevert() {
 }
 
 function renderAccountList() {
-    const container =
-        $("account-list");
-
-    if (!container) {
-        return;
-    }
+    const container = $("account-list");
+    if (!container) return;
 
     if (!state.accounts.length) {
-        container.innerHTML =
-            `<div class="muted">No accounts added.</div>`;
-
+        container.innerHTML = `<div class="muted">No accounts added.</div>`;
         return;
     }
 
-    container.innerHTML =
-        state.accounts
-            .filter(Boolean)
-            .map(account => {
-                const active =
-                    account.id ===
-                    state.activeAccountId;
-
-                return `
-                    <div class="account-row ${active ? "selected" : ""}">
-
-                        <div class="account-info">
-
-                            <strong>
-                                ${escapeHtml(
-                                    account.name ||
-                                    "Unnamed account"
-                                )}
-                            </strong>
-
-                            <small>
-                                Region:
-                                ${escapeHtml(
-                                    account.region ||
-                                    "us-west-1"
-                                )}
-                            </small>
-
-                        </div>
-
-                        <div class="account-actions">
-
-                            <button
-                                type="button"
-                                class="account-use"
-                                data-account-id="${escapeHtml(
-                                    account.id
-                                )}"
-                            >
-                                ${active ? "Active" : "Use"}
-                            </button>
-
-                            <button
-                                type="button"
-                                class="account-edit"
-                                data-account-id="${escapeHtml(
-                                    account.id
-                                )}"
-                            >
-                                Edit
-                            </button>
-
-                            <button
-                                type="button"
-                                class="account-remove"
-                                data-account-id="${escapeHtml(
-                                    account.id
-                                )}"
-                            >
-                                Remove
-                            </button>
-
-                        </div>
-
+    container.innerHTML = state.accounts
+        .filter(Boolean)
+        .map(account => {
+            const active = account.id === state.activeAccountId;
+            return `
+                <div class="account-row ${active ? "selected" : ""}">
+                    <div class="account-info">
+                        <strong>${escapeHtml(account.name || "Unnamed account")}</strong>
+                        <small>Region: ${escapeHtml(account.region || "us-west-1")}</small>
                     </div>
-                `;
-            })
-            .join("");
+                    <div class="account-actions">
+                        <button type="button" class="account-use" data-account-id="${escapeHtml(account.id)}">
+                            ${active ? "Active" : "Use"}
+                        </button>
+                        <button type="button" class="account-edit" data-account-id="${escapeHtml(account.id)}">
+                            Edit
+                        </button>
+                        <button type="button" class="account-remove" data-account-id="${escapeHtml(account.id)}">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
 }
 
 function selectAccount(accountId) {
-    const account =
-        state.accounts.find(
-            item =>
-                item &&
-                item.id === accountId
-        );
+    const account = state.accounts.find(item => item && item.id === accountId);
+    if (!account) return;
 
-    if (!account) {
-        return;
-    }
-
-    state.activeAccountId =
-        accountId;
-
+    state.activeAccountId = accountId;
     saveAccounts();
-
     updateAccountSelector();
     updateRegionFromAccount();
     updateSelectedAccountUI();
-
     renderAccountList();
-
     clearAwsData();
     resetRevertState();
-
     closeCredentials();
-
     showPage(state.currentPage);
-
-    toast(
-        `Using ${account.name}.`,
-        "success"
-    );
+    toast(`Using ${account.name}.`, "success");
 }
 
 function switchAccount() {
-    const select =
-        $("account-select");
-
-    if (!select?.value) {
-        return;
-    }
-
-    selectAccount(
-        select.value
-    );
+    const select = $("account-select");
+    if (!select?.value) return;
+    selectAccount(select.value);
 }
 
 function removeAccount(accountId) {
-    const account =
-        state.accounts.find(
-            item =>
-                item &&
-                item.id === accountId
-        );
+    const account = state.accounts.find(item => item && item.id === accountId);
+    if (!account) return;
 
-    if (!account) {
-        return;
-    }
+    if (!confirm(`Remove AWS account "${account.name}"?`)) return;
 
-    if (
-        !confirm(
-            `Remove AWS account "${account.name}"?`
-        )
-    ) {
-        return;
-    }
-
-    state.accounts =
-        state.accounts.filter(
-            item =>
-                item &&
-                item.id !== accountId
-        );
-
-    if (
-        state.activeAccountId ===
-        accountId
-    ) {
-        state.activeAccountId =
-            state.accounts[0]?.id ||
-            null;
+    state.accounts = state.accounts.filter(item => item && item.id !== accountId);
+    if (state.activeAccountId === accountId) {
+        state.activeAccountId = state.accounts[0]?.id || null;
     }
 
     saveAccounts();
-
     updateAccountSelector();
     updateRegionFromAccount();
     updateSelectedAccountUI();
-
     renderAccountList();
-
     clearAwsData();
     resetRevertState();
-
     showPage(state.currentPage);
 }
 
@@ -1097,77 +800,29 @@ function removeAccount(accountId) {
 ========================================================= */
 
 function getTotalVolumeStorageGB() {
-    return state.volumes.reduce(
-        (total, volume) => {
-            return (
-                total +
-                (Number(volume?.size) || 0)
-            );
-        },
-        0
-    );
+    return state.volumes.reduce((total, volume) => total + (Number(volume?.size) || 0), 0);
 }
 
 function formatStorageSize(storageGB) {
-    const gb =
-        Number(storageGB) || 0;
-
+    const gb = Number(storageGB) || 0;
     if (gb >= 1024) {
-        return `${(
-            gb / 1024
-        ).toFixed(2)} TB`;
+        return `${(gb / 1024).toFixed(2)} TB`;
     }
-
     return `${gb} GB`;
 }
 
 function updateVolumeTotals() {
-    const total =
-        getTotalVolumeStorageGB();
+    const total = getTotalVolumeStorageGB();
+    const count = state.volumes.length;
+    const encrypted = state.volumes.filter(volume => Boolean(volume?.encrypted)).length;
 
-    const count =
-        state.volumes.length;
-
-    const encrypted =
-        state.volumes.filter(
-            volume =>
-                Boolean(volume?.encrypted)
-        ).length;
-
-    if ($("volume-count")) {
-        $("volume-count").textContent =
-            count;
-    }
-
-    if ($("volume-total-storage")) {
-        $("volume-total-storage").textContent =
-            formatStorageSize(total);
-    }
-
-    if ($("dashboard-storage-number")) {
-        $("dashboard-storage-number").textContent =
-            total.toLocaleString();
-    }
-
-    if ($("dashboard-storage-readable")) {
-        $("dashboard-storage-readable").textContent =
-            formatStorageSize(total);
-    }
-
-    if ($("volumes-page-count")) {
-        $("volumes-page-count").textContent =
-            count;
-    }
-
-    if ($("volumes-page-total")) {
-        $("volumes-page-total").textContent =
-            formatStorageSize(total);
-    }
-
-    if ($("volumes-page-encrypted")) {
-        $("volumes-page-encrypted").textContent =
-            encrypted;
-    }
+    if ($("volume-count")) $("volume-count").textContent = count;
+    if ($("volume-total-storage")) $("volume-total-storage").textContent = formatStorageSize(total);
+    if ($("dashboard-storage-number")) $("dashboard-storage-number").textContent = total.toLocaleString();
+    if ($("dashboard-storage-readable")) $("dashboard-storage-readable").textContent = formatStorageSize(total);
+    if ($("volumes-page-count")) $("volumes-page-count").textContent = count;
+    if ($("volumes-page-total")) $("volumes-page-total").textContent = formatStorageSize(total);
+    if ($("volumes-page-encrypted")) $("volumes-page-encrypted").textContent = encrypted;
 }
 
 
@@ -1176,73 +831,28 @@ function updateVolumeTotals() {
 ========================================================= */
 
 function getInstanceStorageGB(instance) {
-    if (!instance) {
-        return 0;
+    if (!instance) return 0;
+
+    if (instance.totalVolumeSize !== undefined && instance.totalVolumeSize !== null) {
+        return Number(instance.totalVolumeSize) || 0;
+    }
+    if (instance.totalVolumeSizeGB !== undefined && instance.totalVolumeSizeGB !== null) {
+        return Number(instance.totalVolumeSizeGB) || 0;
+    }
+    if (instance.totalStorageGB !== undefined && instance.totalStorageGB !== null) {
+        return Number(instance.totalStorageGB) || 0;
     }
 
-    if (
-        instance.totalVolumeSize !==
-        undefined &&
-        instance.totalVolumeSize !== null
-    ) {
-        return Number(
-            instance.totalVolumeSize
-        ) || 0;
-    }
-
-    if (
-        instance.totalVolumeSizeGB !==
-        undefined &&
-        instance.totalVolumeSizeGB !== null
-    ) {
-        return Number(
-            instance.totalVolumeSizeGB
-        ) || 0;
-    }
-
-    if (
-        instance.totalStorageGB !==
-        undefined &&
-        instance.totalStorageGB !== null
-    ) {
-        return Number(
-            instance.totalStorageGB
-        ) || 0;
-    }
-
-    const instanceId =
-        String(
-            instance.instanceId ||
-            instance.instance_id ||
-            ""
-        ).trim();
-
-    if (!instanceId) {
-        return 0;
-    }
+    const instanceId = String(instance.instanceId || instance.instance_id || "").trim();
+    if (!instanceId) return 0;
 
     return state.volumes
-        .filter(
-            volume =>
-                String(
-                    volume?.attachedInstance ||
-                    volume?.instanceId ||
-                    ""
-                ).trim() === instanceId
-        )
-        .reduce(
-            (total, volume) =>
-                total +
-                (Number(volume?.size) || 0),
-            0
-        );
+        .filter(volume => String(volume?.attachedInstance || volume?.instanceId || "").trim() === instanceId)
+        .reduce((total, volume) => total + (Number(volume?.size) || 0), 0);
 }
 
 function isInstanceOverStorageLimit(instance) {
-    return (
-        getInstanceStorageGB(instance) >
-        MAX_INSTANCE_STORAGE_GB
-    );
+    return getInstanceStorageGB(instance) > MAX_INSTANCE_STORAGE_GB;
 }
 
 function validateInstanceStorageLimits() {
@@ -1252,15 +862,9 @@ function validateInstanceStorageLimits() {
     state.instances.forEach(instance => {
         const totalStorage = getInstanceStorageGB(instance);
         if (totalStorage > MAX_INSTANCE_STORAGE_GB) {
-            oversizedInstances.push({
-                instance,
-                storageGB: totalStorage
-            });
+            oversizedInstances.push({ instance, storageGB: totalStorage });
         } else {
-            validInstances.push({
-                instance,
-                storageGB: totalStorage
-            });
+            validInstances.push({ instance, storageGB: totalStorage });
         }
     });
 
@@ -1273,62 +877,23 @@ function validateInstanceStorageLimits() {
 ========================================================= */
 
 function deduplicateInstances(instances = []) {
-    const seenIds =
-        new Set();
-
-    const seenNames =
-        new Set();
-
+    const seenIds = new Set();
+    const seenNames = new Set();
     const unique = [];
 
-    if (!Array.isArray(instances)) {
-        return unique;
-    }
+    if (!Array.isArray(instances)) return unique;
 
     for (const instance of instances) {
-        if (!instance) {
-            continue;
-        }
+        if (!instance) continue;
 
-        const instanceId =
-            String(
-                instance.instanceId ||
-                instance.instance_id ||
-                ""
-            )
-                .trim()
-                .toLowerCase();
+        const instanceId = String(instance.instanceId || instance.instance_id || "").trim().toLowerCase();
+        const instanceName = String(instance.name || instance.instanceName || "").trim().toLowerCase();
 
-        const instanceName =
-            String(
-                instance.name ||
-                instance.instanceName ||
-                ""
-            )
-                .trim()
-                .toLowerCase();
+        if (instanceId && seenIds.has(instanceId)) continue;
+        if (instanceName && seenNames.has(instanceName)) continue;
 
-        if (
-            instanceId &&
-            seenIds.has(instanceId)
-        ) {
-            continue;
-        }
-
-        if (
-            instanceName &&
-            seenNames.has(instanceName)
-        ) {
-            continue;
-        }
-
-        if (instanceId) {
-            seenIds.add(instanceId);
-        }
-
-        if (instanceName) {
-            seenNames.add(instanceName);
-        }
+        if (instanceId) seenIds.add(instanceId);
+        if (instanceName) seenNames.add(instanceName);
 
         unique.push(instance);
     }
@@ -1346,64 +911,100 @@ function clearAwsData() {
     state.volumes = [];
     state.snapshots = [];
 
-    if ($("instance-count")) {
-        $("instance-count").textContent =
-            "-";
+    if ($("instance-count")) $("instance-count").textContent = "-";
+    if ($("snapshot-count")) $("snapshot-count").textContent = "-";
+    if ($("volume-count")) $("volume-count").textContent = "-";
+    if ($("volume-total-storage")) $("volume-total-storage").textContent = "-";
+    if ($("dashboard-storage-number")) $("dashboard-storage-number").textContent = "0";
+    if ($("dashboard-storage-readable")) $("dashboard-storage-readable").textContent = "0 GB";
+    if ($("volumes-page-count")) $("volumes-page-count").textContent = "0";
+    if ($("volumes-page-total")) $("volumes-page-total").textContent = "0 GB";
+    if ($("volumes-page-encrypted")) $("volumes-page-encrypted").textContent = "0";
+    if ($("instances-table")) $("instances-table").innerHTML = "";
+    if ($("volumes-table")) $("volumes-table").innerHTML = "";
+    if ($("snapshots-table")) $("snapshots-table").innerHTML = "";
+}
+
+
+/* =========================================================
+   CENTRALIZED MULTI-ACCOUNT DASHBOARD
+========================================================= */
+
+async function loadCentralizedDashboard() {
+    if (!state.accounts || !state.accounts.length) {
+        toast("No AWS accounts configured.", "error");
+        if ($("centralized-accounts-table")) {
+            $("centralized-accounts-table").innerHTML = `<div class="empty-state small">No AWS accounts configured. Please add an account first.</div>`;
+        }
+        return;
     }
 
-    if ($("snapshot-count")) {
-        $("snapshot-count").textContent =
-            "-";
-    }
+    try {
+        setLoading(true, "Aggregating telemetry across all AWS accounts...");
 
-    if ($("volume-count")) {
-        $("volume-count").textContent =
-            "-";
-    }
+        const data = await api("/api/aws/centralized-dashboard", {
+            method: "POST",
+            body: JSON.stringify({ accounts: state.accounts })
+        });
 
-    if ($("volume-total-storage")) {
-        $("volume-total-storage").textContent =
-            "-";
-    }
+        const summary = data.summary || {};
 
-    if ($("dashboard-storage-number")) {
-        $("dashboard-storage-number").textContent =
-            "0";
-    }
+        if ($("cd-total-instances")) $("cd-total-instances").textContent = summary.instances || 0;
+        if ($("cd-total-volumes")) $("cd-total-volumes").textContent = summary.volumes || 0;
+        if ($("cd-total-snapshots")) $("cd-total-snapshots").textContent = summary.snapshots || 0;
+        if ($("cd-total-storage")) $("cd-total-storage").textContent = formatStorageSize(summary.storageGB || 0);
 
-    if ($("dashboard-storage-readable")) {
-        $("dashboard-storage-readable").textContent =
-            "0 GB";
-    }
+        const container = $("centralized-accounts-table");
+        if (container) {
+            const accountsList = data.accountsData || [];
 
-    if ($("volumes-page-count")) {
-        $("volumes-page-count").textContent =
-            "0";
-    }
+            if (!accountsList.length) {
+                container.innerHTML = `<div class="empty-state small">No account telemetry available.</div>`;
+            } else {
+                container.innerHTML = `
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Account Name</th>
+                                    <th>Region</th>
+                                    <th>Status</th>
+                                    <th>Instances</th>
+                                    <th>Volumes</th>
+                                    <th>Snapshots</th>
+                                    <th>Total Storage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${accountsList.map(acc => `
+                                    <tr>
+                                        <td><strong>${escapeHtml(acc.name || "Unnamed")}</strong></td>
+                                        <td><code>${escapeHtml(acc.region || "-")}</code></td>
+                                        <td>
+                                            <span class="status ${acc.status === 'connected' ? 'completed' : 'error'}">
+                                                ${escapeHtml(acc.status)}
+                                            </span>
+                                        </td>
+                                        <td>${Number(acc.instances || 0)}</td>
+                                        <td>${Number(acc.volumes || 0)}</td>
+                                        <td>${Number(acc.snapshots || 0)}</td>
+                                        <td>${escapeHtml(formatStorageSize(acc.storageGB || 0))}</td>
+                                    </tr>
+                                `).join("")}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+        }
 
-    if ($("volumes-page-total")) {
-        $("volumes-page-total").textContent =
-            "0 GB";
-    }
+        toast("Global multi-account telemetry updated.", "success");
 
-    if ($("volumes-page-encrypted")) {
-        $("volumes-page-encrypted").textContent =
-            "0";
-    }
-
-    if ($("instances-table")) {
-        $("instances-table").innerHTML =
-            "";
-    }
-
-    if ($("volumes-table")) {
-        $("volumes-table").innerHTML =
-            "";
-    }
-
-    if ($("snapshots-table")) {
-        $("snapshots-table").innerHTML =
-            "";
+    } catch (error) {
+        console.error("Centralized dashboard loading failed:", error);
+        toast(error?.message || "Unable to load centralized dashboard.", "error");
+    } finally {
+        setLoading(false);
     }
 }
 
@@ -1413,162 +1014,67 @@ function clearAwsData() {
 ========================================================= */
 
 async function loadDashboard() {
-    const account =
-        getActiveAccount();
-
+    const account = getActiveAccount();
     updateSelectedAccountUI();
 
     if (!account) {
         if ($("dashboard-message")) {
-            $("dashboard-message").textContent =
-                "Add an AWS account to get started.";
+            $("dashboard-message").textContent = "Add an AWS account to get started.";
         }
-
         return;
     }
 
     try {
-        const requestBody =
-            JSON.stringify(
-                getRequestBody()
-            );
+        const requestBody = JSON.stringify(getRequestBody());
 
-        const [
-            instances,
-            volumes,
-            snapshots
-        ] = await Promise.all([
-
-            api(
-                "/api/aws/instances",
-                {
-                    method: "POST",
-                    body: requestBody
-                }
-            ),
-
-            api(
-                "/api/aws/volumes",
-                {
-                    method: "POST",
-                    body: requestBody
-                }
-            ),
-
-            api(
-                "/api/aws/snapshots",
-                {
-                    method: "POST",
-                    body: requestBody
-                }
-            )
-
+        const [instances, volumes, snapshots] = await Promise.all([
+            api("/api/aws/instances", { method: "POST", body: requestBody }),
+            api("/api/aws/volumes", { method: "POST", body: requestBody }),
+            api("/api/aws/snapshots", { method: "POST", body: requestBody })
         ]);
 
-        state.instances =
-            deduplicateInstances(
-                instances.instances || []
-            );
+        state.instances = deduplicateInstances(instances.instances || []);
+        state.volumes = Array.isArray(volumes.volumes) ? volumes.volumes : [];
+        state.snapshots = Array.isArray(snapshots.snapshots) ? snapshots.snapshots : [];
 
-        state.volumes =
-            Array.isArray(volumes.volumes)
-                ? volumes.volumes
-                : [];
-
-        state.snapshots =
-            Array.isArray(snapshots.snapshots)
-                ? snapshots.snapshots
-                : [];
-
-        if ($("instance-count")) {
-            $("instance-count").textContent =
-                state.instances.length;
-        }
-
-        if ($("snapshot-count")) {
-            $("snapshot-count").textContent =
-                state.snapshots.length;
-        }
+        if ($("instance-count")) $("instance-count").textContent = state.instances.length;
+        if ($("snapshot-count")) $("snapshot-count").textContent = state.snapshots.length;
 
         updateVolumeTotals();
 
         if ($("dashboard-message")) {
-            $("dashboard-message").textContent =
-                `${account.name} — ${account.region}`;
+            $("dashboard-message").textContent = `${account.name} — ${account.region}`;
         }
 
     } catch (error) {
-        console.error(
-            "Dashboard loading failed:",
-            error
-        );
-
-        toast(
-            error?.message ||
-            "Unable to load dashboard data.",
-            "error"
-        );
+        console.error("Dashboard loading failed:", error);
+        toast(error?.message || "Unable to load dashboard data.", "error");
     }
 }
 
 
 /* =========================================================
-   INSTANCES (WITH VOLUME INFO & 2TB VALIDATION)
+   INSTANCES
 ========================================================= */
 
 async function loadInstancesWithVolumeValidation() {
     if (!getActiveAccount()) {
-        toast(
-            "Connect an AWS account first.",
-            "error"
-        );
-
+        toast("Connect an AWS account first.", "error");
         return;
     }
 
     try {
-        setLoading(
-            true,
-            "Loading EC2 instances and volume info..."
-        );
+        setLoading(true, "Loading EC2 instances and volume info...");
 
         const [instancesData, volumesData] = await Promise.all([
-            api(
-                "/api/aws/instances",
-                {
-                    method: "POST",
-                    body:
-                        JSON.stringify(
-                            getRequestBody()
-                        )
-                }
-            ),
-            api(
-                "/api/aws/volumes",
-                {
-                    method: "POST",
-                    body:
-                        JSON.stringify(
-                            getRequestBody()
-                        )
-                }
-            )
+            api("/api/aws/instances", { method: "POST", body: JSON.stringify(getRequestBody()) }),
+            api("/api/aws/volumes", { method: "POST", body: JSON.stringify(getRequestBody()) })
         ]);
 
-        state.instances =
-            deduplicateInstances(
-                instancesData.instances || []
-            );
+        state.instances = deduplicateInstances(instancesData.instances || []);
+        state.volumes = Array.isArray(volumesData.volumes) ? volumesData.volumes : [];
 
-        state.volumes =
-            Array.isArray(volumesData.volumes)
-                ? volumesData.volumes
-                : [];
-
-        if ($("instance-count")) {
-            $("instance-count").textContent =
-                state.instances.length;
-        }
+        if ($("instance-count")) $("instance-count").textContent = state.instances.length;
 
         updateVolumeTotals();
 
@@ -1578,24 +1084,11 @@ async function loadInstancesWithVolumeValidation() {
         }
 
         searchInstances();
-
-        toast(
-            `${state.instances.length} unique instances loaded with volume data.`,
-            "success"
-        );
+        toast(`${state.instances.length} unique instances loaded with volume data.`, "success");
 
     } catch (error) {
-        console.error(
-            "Instance & volume loading failed:",
-            error
-        );
-
-        toast(
-            error?.message ||
-            "Unable to load EC2 instances.",
-            "error"
-        );
-
+        console.error("Instance & volume loading failed:", error);
+        toast(error?.message || "Unable to load EC2 instances.", "error");
     } finally {
         setLoading(false);
     }
@@ -1606,64 +1099,41 @@ async function loadInstances() {
 }
 
 function searchInstances() {
-    const search =
-        $("instance-search")
-            ?.value
-            .trim()
-            .toLowerCase() ||
-        "";
+    const search = $("instance-search")?.value.trim().toLowerCase() || "";
 
-    const filtered =
-        state.instances.filter(instance => {
-            const text = [
-                instance?.name,
-                instance?.instanceId,
-                instance?.state,
-                instance?.instanceType,
-                instance?.privateIp,
-                instance?.publicIp,
-                instance?.availabilityZone
-            ]
-                .join(" ")
-                .toLowerCase();
+    const filtered = state.instances.filter(instance => {
+        const text = [
+            instance?.name,
+            instance?.instanceId,
+            instance?.state,
+            instance?.instanceType,
+            instance?.privateIp,
+            instance?.publicIp,
+            instance?.availabilityZone
+        ].join(" ").toLowerCase();
 
-            return text.includes(search);
-        });
+        return text.includes(search);
+    });
 
     if ($("instance-result-count")) {
-        $("instance-result-count").textContent =
-            `${filtered.length} result${
-                filtered.length === 1
-                    ? ""
-                    : "s"
-            }`;
+        $("instance-result-count").textContent = `${filtered.length} result${filtered.length === 1 ? "" : "s"}`;
     }
 
     renderInstances(filtered);
 }
 
 function renderInstances(instances) {
-    const container =
-        $("instances-table");
-
-    if (!container) {
-        return;
-    }
+    const container = $("instances-table");
+    if (!container) return;
 
     if (!instances.length) {
-        container.innerHTML =
-            `<div class="empty-state small">
-                No instances found.
-            </div>`;
-
+        container.innerHTML = `<div class="empty-state small">No instances found.</div>`;
         return;
     }
 
     container.innerHTML = `
         <div class="table-wrapper">
-
             <table>
-
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -1677,108 +1147,35 @@ function renderInstances(instances) {
                         <th>Total Storage</th>
                     </tr>
                 </thead>
-
                 <tbody>
-
                     ${instances.map(instance => {
-                        const storageGB =
-                            getInstanceStorageGB(
-                                instance
-                            );
-
-                        const overLimit =
-                            storageGB >
-                            MAX_INSTANCE_STORAGE_GB;
+                        const storageGB = getInstanceStorageGB(instance);
+                        const overLimit = storageGB > MAX_INSTANCE_STORAGE_GB;
 
                         return `
                             <tr>
-
+                                <td>${escapeHtml(instance.name || "-")}</td>
+                                <td><code>${escapeHtml(instance.instanceId || instance.instance_id || "-")}</code></td>
                                 <td>
-                                    ${escapeHtml(
-                                        instance.name ||
-                                        "-"
-                                    )}
-                                </td>
-
-                                <td>
-                                    <code>
-                                        ${escapeHtml(
-                                            instance.instanceId ||
-                                            instance.instance_id ||
-                                            "-"
-                                        )}
-                                    </code>
-                                </td>
-
-                                <td>
-                                    <span class="status ${escapeHtml(
-                                        instance.state ||
-                                        ""
-                                    )}">
-                                        ${escapeHtml(
-                                            instance.state ||
-                                            "-"
-                                        )}
+                                    <span class="status ${escapeHtml(instance.state || "")}">
+                                        ${escapeHtml(instance.state || "-")}
                                     </span>
                                 </td>
-
+                                <td>${escapeHtml(instance.instanceType || "-")}</td>
+                                <td>${escapeHtml(instance.privateIp || "-")}</td>
+                                <td>${escapeHtml(instance.publicIp || "-")}</td>
+                                <td>${escapeHtml(instance.availabilityZone || "-")}</td>
+                                <td>${Number(instance.volumeCount || 0)}</td>
                                 <td>
-                                    ${escapeHtml(
-                                        instance.instanceType ||
-                                        "-"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        instance.privateIp ||
-                                        "-"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        instance.publicIp ||
-                                        "-"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        instance.availabilityZone ||
-                                        "-"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${Number(
-                                        instance.volumeCount ||
-                                        0
-                                    )}
-                                </td>
-
-                                <td>
-                                    <span class="${
-                                        overLimit
-                                            ? "status error"
-                                            : ""
-                                    }">
-                                        ${escapeHtml(
-                                            formatStorageSize(
-                                                storageGB
-                                            )
-                                        )}
+                                    <span class="${overLimit ? "status error" : ""}">
+                                        ${escapeHtml(formatStorageSize(storageGB))}
                                     </span>
                                 </td>
-
                             </tr>
                         `;
                     }).join("")}
-
                 </tbody>
-
             </table>
-
         </div>
     `;
 }
@@ -1790,91 +1187,47 @@ function renderInstances(instances) {
 
 async function loadVolumes() {
     if (!getActiveAccount()) {
-        toast(
-            "Connect an AWS account first.",
-            "error"
-        );
-
+        toast("Connect an AWS account first.", "error");
         return;
     }
 
     try {
-        setLoading(
-            true,
-            "Loading EBS volumes..."
-        );
+        setLoading(true, "Loading EBS volumes...");
 
-        const data =
-            await api(
-                "/api/aws/volumes",
-                {
-                    method: "POST",
-                    body:
-                        JSON.stringify(
-                            getRequestBody()
-                        )
-                }
-            );
+        const data = await api("/api/aws/volumes", {
+            method: "POST",
+            body: JSON.stringify(getRequestBody())
+        });
 
-        state.volumes =
-            Array.isArray(data.volumes)
-                ? data.volumes
-                : [];
-
+        state.volumes = Array.isArray(data.volumes) ? data.volumes : [];
         updateVolumeTotals();
+        renderVolumes(state.volumes);
 
-        renderVolumes(
-            state.volumes
-        );
-
-        toast(
-            `${state.volumes.length} volumes loaded.`,
-            "success"
-        );
+        toast(`${state.volumes.length} volumes loaded.`, "success");
 
     } catch (error) {
-        console.error(
-            "Volume loading failed:",
-            error
-        );
-
-        toast(
-            error?.message ||
-            "Unable to load EBS volumes.",
-            "error"
-        );
-
+        console.error("Volume loading failed:", error);
+        toast(error?.message || "Unable to load EBS volumes.", "error");
     } finally {
         setLoading(false);
     }
 }
 
 function renderVolumes(volumes) {
-    const container =
-        $("volumes-table");
-
-    if (!container) {
-        return;
-    }
+    const container = $("volumes-table");
+    if (!container) return;
 
     updateVolumeTotals();
 
     if (!volumes.length) {
-        container.innerHTML =
-            `<div class="empty-state small">
-                No EBS volumes found.
-            </div>`;
-
+        container.innerHTML = `<div class="empty-state small">No EBS volumes found.</div>`;
         return;
     }
 
     container.innerHTML = `
         <div class="table-wrapper">
-
             <table>
-
                 <thead>
-
                     <tr>
                         <th>Name</th>
                         <th>Volume ID</th>
@@ -1884,83 +1237,25 @@ function renderVolumes(volumes) {
                         <th>Instance</th>
                         <th>Encrypted</th>
                     </tr>
-
                 </thead>
-
                 <tbody>
-
                     ${volumes.map(volume => `
                         <tr>
-
+                            <td>${escapeHtml(volume.name || "-")}</td>
+                            <td><code>${escapeHtml(volume.volumeId || "-")}</code></td>
+                            <td><strong>${Number(volume.size || 0)} GB</strong></td>
+                            <td>${escapeHtml(volume.type || "gp3")}</td>
                             <td>
-                                ${escapeHtml(
-                                    volume.name ||
-                                    "-"
-                                )}
-                            </td>
-
-                            <td>
-                                <code>
-                                    ${escapeHtml(
-                                        volume.volumeId ||
-                                        "-"
-                                    )}
-                                </code>
-                            </td>
-
-                            <td>
-                                <strong>
-                                    ${Number(
-                                        volume.size ||
-                                        0
-                                    )}
-                                    GB
-                                </strong>
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    volume.type ||
-                                    "gp3"
-                                )}
-                            </td>
-
-                            <td>
-                                <span class="status ${escapeHtml(
-                                    volume.state ||
-                                    ""
-                                )}">
-                                    ${escapeHtml(
-                                        volume.state ||
-                                        "-"
-                                    )}
+                                <span class="status ${escapeHtml(volume.state || "")}">
+                                    ${escapeHtml(volume.state || "-")}
                                 </span>
                             </td>
-
-                            <td>
-                                <code>
-                                    ${escapeHtml(
-                                        volume.attachedInstance ||
-                                        "-"
-                                    )}
-                                </code>
-                            </td>
-
-                            <td>
-                                ${
-                                    volume.encrypted
-                                        ? "Yes"
-                                        : "No"
-                                }
-                            </td>
-
+                            <td><code>${escapeHtml(volume.attachedInstance || "-")}</code></td>
+                            <td>${volume.encrypted ? "Yes" : "No"}</td>
                         </tr>
                     `).join("")}
-
                 </tbody>
-
             </table>
-
         </div>
     `;
 }
@@ -1971,73 +1266,43 @@ function renderVolumes(volumes) {
 ========================================================= */
 
 async function loadSnapshots(options = {}) {
-    const silent =
-        Boolean(options.silent);
+    const silent = Boolean(options.silent);
 
     if (!getActiveAccount()) {
         if (!silent) {
-            toast(
-                "Connect an AWS account first.",
-                "error"
-            );
+            toast("Connect an AWS account first.", "error");
         }
-
         return;
     }
 
     try {
         if (!silent) {
-            setLoading(
-                true,
-                "Loading AWS snapshots..."
-            );
+            setLoading(true, "Loading AWS snapshots...");
         }
 
-        const data =
-            await api(
-                "/api/aws/snapshots",
-                {
-                    method: "POST",
-                    body:
-                        JSON.stringify(
-                            getRequestBody()
-                        )
-                }
-            );
+        const data = await api("/api/aws/snapshots", {
+            method: "POST",
+            body: JSON.stringify(getRequestBody())
+        });
 
-        state.snapshots =
-            Array.isArray(data.snapshots)
-                ? data.snapshots
-                : [];
+        state.snapshots = Array.isArray(data.snapshots) ? data.snapshots : [];
 
         if ($("snapshot-count")) {
-            $("snapshot-count").textContent =
-                state.snapshots.length;
+            $("snapshot-count").textContent = state.snapshots.length;
         }
 
         searchSnapshots();
 
         if (!silent) {
-            toast(
-                `${state.snapshots.length} snapshots loaded.`,
-                "success"
-            );
+            toast(`${state.snapshots.length} snapshots loaded.`, "success");
         }
 
     } catch (error) {
         if (!silent) {
-            toast(
-                error?.message ||
-                "Unable to load snapshots.",
-                "error"
-            );
+            toast(error?.message || "Unable to load snapshots.", "error");
         } else {
-            console.error(
-                "Snapshot polling failed:",
-                error
-            );
+            console.error("Snapshot polling failed:", error);
         }
-
     } finally {
         if (!silent) {
             setLoading(false);
@@ -2046,68 +1311,44 @@ async function loadSnapshots(options = {}) {
 }
 
 function searchSnapshots() {
-    const search =
-        $("snapshot-search")
-            ?.value
-            .trim()
-            .toLowerCase() ||
-        "";
+    const search = $("snapshot-search")?.value.trim().toLowerCase() || "";
 
-    const filtered =
-        state.snapshots.filter(snapshot => {
-            const text = [
-                snapshot?.snapshotId,
-                snapshot?.volumeId,
-                snapshot?.state,
-                snapshot?.progress,
-                snapshot?.description,
-                snapshot?.instanceName,
-                snapshot?.instanceId,
-                snapshot?.createdBy,
-                snapshot?.team
-            ]
-                .join(" ")
-                .toLowerCase();
+    const filtered = state.snapshots.filter(snapshot => {
+        const text = [
+            snapshot?.snapshotId,
+            snapshot?.volumeId,
+            snapshot?.state,
+            snapshot?.progress,
+            snapshot?.description,
+            snapshot?.instanceName,
+            snapshot?.instanceId,
+            snapshot?.createdBy,
+            snapshot?.team
+        ].join(" ").toLowerCase();
 
-            return text.includes(search);
-        });
+        return text.includes(search);
+    });
 
     if ($("snapshot-result-count")) {
-        $("snapshot-result-count").textContent =
-            `${filtered.length} result${
-                filtered.length === 1
-                    ? ""
-                    : "s"
-            }`;
+        $("snapshot-result-count").textContent = `${filtered.length} result${filtered.length === 1 ? "" : "s"}`;
     }
 
     renderSnapshots(filtered);
 }
 
 function renderSnapshots(snapshots) {
-    const container =
-        $("snapshots-table");
-
-    if (!container) {
-        return;
-    }
+    const container = $("snapshots-table");
+    if (!container) return;
 
     if (!snapshots.length) {
-        container.innerHTML =
-            `<div class="empty-state small">
-                No snapshots found.
-            </div>`;
-
+        container.innerHTML = `<div class="empty-state small">No snapshots found.</div>`;
         return;
     }
 
     container.innerHTML = `
         <div class="table-wrapper">
-
             <table>
-
                 <thead>
-
                     <tr>
                         <th>Snapshot</th>
                         <th>Instance</th>
@@ -2118,92 +1359,30 @@ function renderSnapshots(snapshots) {
                         <th>Team</th>
                         <th>Start Time</th>
                     </tr>
-
                 </thead>
-
                 <tbody>
-
                     ${snapshots.map(snapshot => `
                         <tr>
-
+                            <td><code>${escapeHtml(snapshot.snapshotId || "-")}</code></td>
                             <td>
-                                <code>
-                                    ${escapeHtml(
-                                        snapshot.snapshotId ||
-                                        "-"
-                                    )}
-                                </code>
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    snapshot.instanceName ||
-                                    "-"
-                                )}
+                                ${escapeHtml(snapshot.instanceName || "-")}
                                 <br>
-                                <small>
-                                    ${escapeHtml(
-                                        snapshot.instanceId ||
-                                        "-"
-                                    )}
-                                </small>
+                                <small>${escapeHtml(snapshot.instanceId || "-")}</small>
                             </td>
-
+                            <td><code>${escapeHtml(snapshot.volumeId || "-")}</code></td>
                             <td>
-                                <code>
-                                    ${escapeHtml(
-                                        snapshot.volumeId ||
-                                        "-"
-                                    )}
-                                </code>
-                            </td>
-
-                            <td>
-                                <span class="status ${escapeHtml(
-                                    snapshot.state ||
-                                    ""
-                                )}">
-                                    ${escapeHtml(
-                                        snapshot.state ||
-                                        "-"
-                                    )}
+                                <span class="status ${escapeHtml(snapshot.state || "")}">
+                                    ${escapeHtml(snapshot.state || "-")}
                                 </span>
                             </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    snapshot.progress ||
-                                    "-"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    snapshot.createdBy ||
-                                    "-"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    snapshot.team ||
-                                    "-"
-                                )}
-                            </td>
-
-                            <td>
-                                ${formatDate(
-                                    snapshot.startTime
-                                )}
-                            </td>
-
+                            <td>${escapeHtml(snapshot.progress || "-")}</td>
+                            <td>${escapeHtml(snapshot.createdBy || "-")}</td>
+                            <td>${escapeHtml(snapshot.team || "-")}</td>
+                            <td>${formatDate(snapshot.startTime)}</td>
                         </tr>
                     `).join("")}
-
                 </tbody>
-
             </table>
-
         </div>
     `;
 }
@@ -2215,41 +1394,19 @@ function renderSnapshots(snapshots) {
 
 function startSnapshotPolling() {
     stopSnapshotPolling();
+    loadSnapshots({ silent: true });
 
-    loadSnapshots({
-        silent: true
-    });
-
-    state.snapshotPollingTimer =
-        setInterval(() => {
-            if (
-                state.currentPage !==
-                "snapshots"
-            ) {
-                return;
-            }
-
-            if (!getActiveAccount()) {
-                return;
-            }
-
-            loadSnapshots({
-                silent: true
-            });
-
-        }, SNAPSHOT_POLL_INTERVAL);
+    state.snapshotPollingTimer = setInterval(() => {
+        if (state.currentPage !== "snapshots") return;
+        if (!getActiveAccount()) return;
+        loadSnapshots({ silent: true });
+    }, SNAPSHOT_POLL_INTERVAL);
 }
 
 function stopSnapshotPolling() {
-    if (
-        state.snapshotPollingTimer
-    ) {
-        clearInterval(
-            state.snapshotPollingTimer
-        );
-
-        state.snapshotPollingTimer =
-            null;
+    if (state.snapshotPollingTimer) {
+        clearInterval(state.snapshotPollingTimer);
+        state.snapshotPollingTimer = null;
     }
 }
 
@@ -2259,219 +1416,91 @@ function stopSnapshotPolling() {
 ========================================================= */
 
 async function loadInstancesForSnapshot() {
-    if (!getActiveAccount()) {
-        return;
-    }
+    if (!getActiveAccount()) return;
 
     if (state.instances.length) {
-        state.instances =
-            deduplicateInstances(
-                state.instances
-            );
-
+        state.instances = deduplicateInstances(state.instances);
         updateInstanceHint();
-
         return;
     }
 
     try {
-        setLoading(
-            true,
-            "Loading instances..."
-        );
+        setLoading(true, "Loading instances...");
+        const data = await api("/api/aws/instances", {
+            method: "POST",
+            body: JSON.stringify(getRequestBody())
+        });
 
-        const data =
-            await api(
-                "/api/aws/instances",
-                {
-                    method: "POST",
-                    body:
-                        JSON.stringify(
-                            getRequestBody()
-                        )
-                }
-            );
-
-        state.instances =
-            deduplicateInstances(
-                data.instances || []
-            );
-
+        state.instances = deduplicateInstances(data.instances || []);
         updateInstanceHint();
-
     } catch (error) {
-        console.error(
-            "Unable to load snapshot instances:",
-            error
-        );
-
-        toast(
-            error?.message ||
-            "Unable to load instances.",
-            "error"
-        );
-
+        console.error("Unable to load snapshot instances:", error);
+        toast(error?.message || "Unable to load instances.", "error");
     } finally {
         setLoading(false);
     }
 }
 
 function updateInstanceHint() {
-    const hint =
-        $("snapshot-instance-hint");
+    const hint = $("snapshot-instance-hint");
+    if (!hint) return;
 
-    if (!hint) {
-        return;
-    }
-
-    hint.textContent =
-        `${state.instances.length} unique instance(s) available in ${
-            getActiveAccount()?.region || "-"
-        }. Instances with more than 2 TB of attached EBS storage cannot be snapshotted.`;
+    hint.textContent = `${state.instances.length} unique instance(s) available in ${getActiveAccount()?.region || "-"}. Instances with more than 2 TB of attached EBS storage cannot be snapshotted.`;
 }
 
 function getSnapshotInstanceLines() {
-    const lines =
-        $("snapshot-instances")
-            ?.value
-            .split(/\r?\n/)
-            .map(value => value.trim())
-            .filter(Boolean) ||
-        [];
-
-    const seen =
-        new Set();
+    const lines = $("snapshot-instances")?.value.split(/\r?\n/).map(v => v.trim()).filter(Boolean) || [];
+    const seen = new Set();
 
     return lines.filter(value => {
-        const key =
-            value.toLowerCase();
-
-        if (seen.has(key)) {
-            return false;
-        }
-
+        const key = value.toLowerCase();
+        if (seen.has(key)) return false;
         seen.add(key);
-
         return true;
     });
 }
 
 function previewSnapshotInstances() {
-    const lines =
-        getSnapshotInstanceLines();
+    const lines = getSnapshotInstanceLines();
+    const preview = $("snapshot-instance-preview");
+    if (!preview) return;
 
-    const preview =
-        $("snapshot-instance-preview");
-
-    if (!preview) {
-        return;
-    }
-
-    state.instances =
-        deduplicateInstances(
-            state.instances
-        );
+    state.instances = deduplicateInstances(state.instances);
 
     if (!lines.length) {
-        preview.innerHTML =
-            `<div class="muted">
-                Enter one instance name or ID per line.
-            </div>`;
-
+        preview.innerHTML = `<div class="muted">Enter one instance name or ID per line.</div>`;
         return;
     }
 
-    const results =
-        lines.map(input => {
-            const lower =
-                input.toLowerCase();
-
-            const match =
-                state.instances.find(
-                    instance =>
-                        String(
-                            instance.instanceId ||
-                            instance.instance_id ||
-                            ""
-                        )
-                            .toLowerCase() ===
-                            lower ||
-                        String(
-                            instance.name ||
-                            instance.instanceName ||
-                            ""
-                        )
-                            .toLowerCase() ===
-                            lower
-                );
-
-            return {
-                input,
-                match
-            };
-        });
-
-    const found =
-        results.filter(
-            item => item.match
+    const results = lines.map(input => {
+        const lower = input.toLowerCase();
+        const match = state.instances.find(
+            instance =>
+                String(instance.instanceId || instance.instance_id || "").toLowerCase() === lower ||
+                String(instance.name || instance.instanceName || "").toLowerCase() === lower
         );
+        return { input, match };
+    });
 
-    const missing =
-        results.filter(
-            item => !item.match
-        );
-
-    const oversized =
-        found.filter(
-            item =>
-                isInstanceOverStorageLimit(
-                    item.match
-                )
-        );
-
-    const allowed =
-        found.filter(
-            item =>
-                !isInstanceOverStorageLimit(
-                    item.match
-                )
-        );
+    const found = results.filter(item => item.match);
+    const missing = results.filter(item => !item.match);
+    const oversized = found.filter(item => isInstanceOverStorageLimit(item.match));
+    const allowed = found.filter(item => !isInstanceOverStorageLimit(item.match));
 
     let html = "";
 
     if (allowed.length) {
         html += `
             <div class="success-box">
-
-                <strong>
-                    ${allowed.length}
-                    unique instance(s) eligible for snapshot
-                </strong>
-
+                <strong>${allowed.length} unique instance(s) eligible for snapshot</strong>
                 <ul>
-
                     ${allowed.map(item => `
                         <li>
-                            ${escapeHtml(
-                                item.match.name ||
-                                item.match.instanceId ||
-                                item.match.instance_id
-                            )}
-
-                            —
-
-                            ${escapeHtml(
-                                formatStorageSize(
-                                    getInstanceStorageGB(
-                                        item.match
-                                    )
-                                )
-                            )}
+                            ${escapeHtml(item.match.name || item.match.instanceId || item.match.instance_id)}
+                            — ${escapeHtml(formatStorageSize(getInstanceStorageGB(item.match)))}
                         </li>
                     `).join("")}
-
                 </ul>
-
             </div>
         `;
     }
@@ -2479,36 +1508,15 @@ function previewSnapshotInstances() {
     if (oversized.length) {
         html += `
             <div class="error-box">
-
-                <strong>
-                    ${oversized.length}
-                    instance(s) exceed 2 TB (2048 GB) limit
-                </strong>
-
+                <strong>${oversized.length} instance(s) exceed 2 TB (2048 GB) limit</strong>
                 <ul>
-
                     ${oversized.map(item => `
                         <li>
-                            ${escapeHtml(
-                                item.match.name ||
-                                item.match.instanceId ||
-                                item.match.instance_id
-                            )}
-
-                            —
-
-                            ${escapeHtml(
-                                formatStorageSize(
-                                    getInstanceStorageGB(
-                                        item.match
-                                    )
-                                )
-                            )}
+                            ${escapeHtml(item.match.name || item.match.instanceId || item.match.instance_id)}
+                            — ${escapeHtml(formatStorageSize(getInstanceStorageGB(item.match)))}
                         </li>
                     `).join("")}
-
                 </ul>
-
             </div>
         `;
     }
@@ -2516,281 +1524,110 @@ function previewSnapshotInstances() {
     if (missing.length) {
         html += `
             <div class="error-box">
-
-                <strong>
-                    ${missing.length}
-                    instance(s) not found
-                </strong>
-
+                <strong>${missing.length} instance(s) not found</strong>
                 <ul>
-
-                    ${missing.map(item => `
-                        <li>
-                            ${escapeHtml(
-                                item.input
-                            )}
-                        </li>
-                    `).join("")}
-
+                    ${missing.map(item => `<li>${escapeHtml(item.input)}</li>`).join("")}
                 </ul>
-
             </div>
         `;
     }
 
-    preview.innerHTML =
-        html;
+    preview.innerHTML = html;
 }
 
 async function createSnapshotsFromInstances() {
-    const account =
-        getActiveAccount();
-
+    const account = getActiveAccount();
     if (!account) {
-        toast(
-            "Connect an AWS account first.",
-            "error"
-        );
-
+        toast("Connect an AWS account first.", "error");
         openCredentials();
-
         return;
     }
 
-    state.instances =
-        deduplicateInstances(
-            state.instances
-        );
-
-    const instances =
-        getSnapshotInstanceLines();
+    state.instances = deduplicateInstances(state.instances);
+    const instances = getSnapshotInstanceLines();
 
     if (!instances.length) {
-        toast(
-            "Enter at least one instance name or ID.",
-            "error"
-        );
-
+        toast("Enter at least one instance name or ID.", "error");
         return;
     }
 
-    const matchedInstances =
-        instances
-            .map(input => {
-                const lower =
-                    input.toLowerCase();
-
-                return state.instances.find(
-                    instance =>
-                        String(
-                            instance.instanceId ||
-                            instance.instance_id ||
-                            ""
-                        )
-                            .toLowerCase() ===
-                            lower ||
-                        String(
-                            instance.name ||
-                            instance.instanceName ||
-                            ""
-                        )
-                            .toLowerCase() ===
-                            lower
-                );
-            })
-            .filter(Boolean);
-
-    const uniqueMatchedInstances =
-        deduplicateInstances(
-            matchedInstances
-        );
-
-    const oversized =
-        uniqueMatchedInstances.filter(
+    const matchedInstances = instances.map(input => {
+        const lower = input.toLowerCase();
+        return state.instances.find(
             instance =>
-                isInstanceOverStorageLimit(
-                    instance
-                )
+                String(instance.instanceId || instance.instance_id || "").toLowerCase() === lower ||
+                String(instance.name || instance.instanceName || "").toLowerCase() === lower
         );
+    }).filter(Boolean);
+
+    const uniqueMatchedInstances = deduplicateInstances(matchedInstances);
+    const oversized = uniqueMatchedInstances.filter(instance => isInstanceOverStorageLimit(instance));
 
     if (oversized.length) {
-        alert(
-            "Snapshot creation blocked.\n\n" +
-            "One or more instances exceed the 2 TB limit."
-        );
-
+        alert("Snapshot creation blocked.\n\nOne or more instances exceed the 2 TB limit.");
         return;
     }
 
-    if (
-        uniqueMatchedInstances.length !==
-        instances.length
-    ) {
-        const matchedKeys =
-            new Set(
-                uniqueMatchedInstances.flatMap(
-                    instance => [
-                        String(
-                            instance.instanceId ||
-                            instance.instance_id ||
-                            ""
-                        ).toLowerCase(),
+    if (uniqueMatchedInstances.length !== instances.length) {
+        const matchedKeys = new Set(
+            uniqueMatchedInstances.flatMap(instance => [
+                String(instance.instanceId || instance.instance_id || "").toLowerCase(),
+                String(instance.name || instance.instanceName || "").toLowerCase()
+            ])
+        );
 
-                        String(
-                            instance.name ||
-                            instance.instanceName ||
-                            ""
-                        ).toLowerCase()
-                    ]
-                )
-            );
-
-        const missing =
-            instances.filter(
-                input =>
-                    !matchedKeys.has(
-                        input.toLowerCase()
-                    )
-            );
-
+        const missing = instances.filter(input => !matchedKeys.has(input.toLowerCase()));
         if (missing.length) {
-            alert(
-                "The following instance(s) were not found:\n\n" +
-                missing.join("\n")
-            );
-
+            alert("The following instance(s) were not found:\n\n" + missing.join("\n"));
             return;
         }
     }
 
-    const description =
-        $("snapshot-description")
-            ?.value
-            .trim() ||
-        "";
+    const description = $("snapshot-description")?.value.trim() || "";
 
-    if (
-        !confirm(
-            `Create snapshots for ${uniqueMatchedInstances.length} unique instance(s)?`
-        )
-    ) {
+    if (!confirm(`Create snapshots for ${uniqueMatchedInstances.length} unique instance(s)?`)) {
         return;
     }
 
-    const snapshotInstances =
-        uniqueMatchedInstances.map(
-            instance =>
-                instance.instanceId ||
-                instance.instance_id ||
-                instance.name
-        );
+    const snapshotInstances = uniqueMatchedInstances.map(
+        instance => instance.instanceId || instance.instance_id || instance.name
+    );
 
     try {
-        setLoading(
-            true,
-            "Creating snapshots..."
-        );
+        setLoading(true, "Creating snapshots...");
 
-        const data =
-            await api(
-                "/api/aws/create-instance-snapshots",
-                {
-                    method: "POST",
-                    body:
-                        JSON.stringify({
-                            ...getRequestBody(),
-
-                            instances:
-                                snapshotInstances,
-
-                            description
-                        })
-                }
-            );
+        const data = await api("/api/aws/create-instance-snapshots", {
+            method: "POST",
+            body: JSON.stringify({
+                ...getRequestBody(),
+                instances: snapshotInstances,
+                description
+            })
+        });
 
         renderCreateResults(data);
-
-        toast(
-            `Snapshot job ${data.jobId || "started"} started.`,
-            "success"
-        );
-
-        showPage(
-            "snapshot-dashboard"
-        );
+        toast(`Snapshot job ${data.jobId || "started"} started.`, "success");
+        showPage("snapshot-dashboard");
 
     } catch (error) {
-        console.error(
-            "Snapshot creation failed:",
-            error
-        );
-
-        toast(
-            error?.message ||
-            "Unable to create snapshots.",
-            "error"
-        );
-
+        console.error("Snapshot creation failed:", error);
+        toast(error?.message || "Unable to create snapshots.", "error");
     } finally {
         setLoading(false);
     }
 }
 
 function renderCreateResults(data) {
-    const container =
-        $("snapshot-result");
-
-    if (!container) {
-        return;
-    }
+    const container = $("snapshot-result");
+    if (!container) return;
 
     container.innerHTML = `
         <div class="success-box">
-
-            <h3>
-                Snapshot job started
-            </h3>
-
-            <p>
-                Job ID:
-                <strong>
-                    ${escapeHtml(
-                        data.jobId ||
-                        "-"
-                    )}
-                </strong>
-            </p>
-
-            <p>
-                Instances:
-                <strong>
-                    ${Number(
-                        data.instanceCount ||
-                        0
-                    )}
-                </strong>
-            </p>
-
-            <p>
-                Volumes:
-                <strong>
-                    ${Number(
-                        data.volumeCount ||
-                        0
-                    )}
-                </strong>
-            </p>
-
-            <p>
-                Snapshots:
-                <strong>
-                    ${Number(
-                        data.snapshotCount ||
-                        0
-                    )}
-                </strong>
-            </p>
-
+            <h3>Snapshot job started</h3>
+            <p>Job ID: <strong>${escapeHtml(data.jobId || "-")}</strong></p>
+            <p>Instances: <strong>${Number(data.instanceCount || 0)}</strong></p>
+            <p>Volumes: <strong>${Number(data.volumeCount || 0)}</strong></p>
+            <p>Snapshots: <strong>${Number(data.snapshotCount || 0)}</strong></p>
         </div>
     `;
 }
@@ -2801,96 +1638,56 @@ function renderCreateResults(data) {
 ========================================================= */
 
 function showPage(page) {
-    if (!page) {
-        page = "dashboard";
+    if (!page) page = "dashboard";
+
+    if (page !== "snapshots") stopSnapshotPolling();
+    if (page !== "snapshot-dashboard") stopSnapshotDashboardPolling();
+
+    if (page === "centralized-dashboard") {
+        loadCentralizedDashboard();
     }
 
-    if (page !== "snapshots") {
-        stopSnapshotPolling();
-    }
-
-    if (page !== "snapshot-dashboard") {
-        stopSnapshotDashboardPolling();
-    }
-
-    const pages =
-        document.querySelectorAll(".page");
-
+    const pages = document.querySelectorAll(".page");
     pages.forEach(element => {
-        element.classList.toggle(
-            "active",
-            element.id === page
-        );
+        element.classList.toggle("active", element.id === page);
     });
 
-    document
-        .querySelectorAll("[data-page]")
-        .forEach(button => {
-            button.classList.toggle(
-                "active",
-                button.dataset.page === page
-            );
-        });
+    document.querySelectorAll("[data-page]").forEach(button => {
+        button.classList.toggle("active", button.dataset.page === page);
+    });
 
     const titles = {
-        dashboard:
-            "Dashboard",
-
-        instances:
-            "Instances",
-
-        volumes:
-            "Volumes",
-
-        snapshots:
-            "Snapshots",
-
-        "create-snapshot":
-            "Create Snapshot",
-
-        "snapshot-dashboard":
-            "Snapshot Jobs",
-
-        "revert-snapshot":
-            "Revert Snapshot"
+        dashboard: "Dashboard",
+        instances: "Instances",
+        volumes: "Volumes",
+        snapshots: "Snapshots",
+        "create-snapshot": "Create Snapshot",
+        "snapshot-dashboard": "Snapshot Jobs",
+        "revert-snapshot": "Revert Snapshot",
+        "centralized-dashboard": "Global Dashboard"
     };
 
     if ($("page-title")) {
-        $("page-title").textContent =
-            titles[page] ||
-            "AWS Snapshot Portal";
+        $("page-title").textContent = titles[page] || "AWS Snapshot Portal";
     }
 
-    state.currentPage =
-        page;
+    state.currentPage = page;
 
-    if (page === "dashboard") {
-        loadDashboard();
-    }
-
-    if (page === "instances") {
-        loadInstancesWithVolumeValidation();
-    }
-
-    if (page === "volumes") {
-        loadVolumes();
-    }
-
+    if (page === "dashboard") loadDashboard();
+    if (page === "instances") loadInstancesWithVolumeValidation();
+    if (page === "volumes") loadVolumes();
     if (page === "snapshots") {
         loadSnapshots();
         startSnapshotPolling();
     }
-
     if (page === "create-snapshot") {
         loadInstancesForSnapshot();
         loadInstancesWithVolumeValidation();
     }
-
     if (page === "snapshot-dashboard") {
         loadSnapshotDashboard();
         startSnapshotDashboardPolling();
     }
-
     if (page === "revert-snapshot") {
         resetRevertState();
         loadInstancesForRevert();
@@ -2904,50 +1701,24 @@ function showPage(page) {
 
 async function loadSnapshotDashboard() {
     try {
-        const data =
-            await api(
-                "/api/snapshot-dashboard"
-            );
-
-        renderSnapshotDashboard(
-            data
-        );
+        const data = await api("/api/snapshot-dashboard");
+        renderSnapshotDashboard(data);
 
         await syncRunningJobsGlobally(
-            Array.isArray(data.jobs)
-                ? data.jobs
-                : []
+            Array.isArray(data.jobs) ? data.jobs : []
         );
-
     } catch (error) {
-        console.error(
-            "Snapshot dashboard loading failed:",
-            error
-        );
-
+        console.error("Snapshot dashboard loading failed:", error);
         if (isAwsAuthenticationError(error)) {
             openCredentialsForAwsError();
         }
-
-        toast(
-            error?.message ||
-            "Unable to load snapshot jobs.",
-            "error"
-        );
+        toast(error?.message || "Unable to load snapshot jobs.", "error");
     }
 }
 
 async function syncRunningJobsGlobally(jobs) {
-    const activeJobs =
-        jobs.filter(
-            job =>
-                job?.status ===
-                "running"
-        );
-
-    if (!activeJobs.length) {
-        return;
-    }
+    const activeJobs = jobs.filter(job => job?.status === "running");
+    if (!activeJobs.length) return;
 
     for (const job of activeJobs) {
         let targetAccount = getActiveAccount();
@@ -2956,9 +1727,7 @@ async function syncRunningJobsGlobally(jobs) {
             targetAccount = state.accounts.find(acc => acc.region === job.region) || state.accounts[0];
         }
 
-        if (!targetAccount) {
-            continue;
-        }
+        if (!targetAccount) continue;
 
         const requestBody = {
             accessKeyId: targetAccount.accessKeyId,
@@ -2969,22 +1738,12 @@ async function syncRunningJobsGlobally(jobs) {
         };
 
         try {
-            await api(
-                `/api/snapshot-jobs/${encodeURIComponent(
-                    job.job_id
-                )}/sync`,
-                {
-                    method: "POST",
-                    body: JSON.stringify(requestBody)
-                }
-            );
-
+            await api(`/api/snapshot-jobs/${encodeURIComponent(job.job_id)}/sync`, {
+                method: "POST",
+                body: JSON.stringify(requestBody)
+            });
         } catch (error) {
-            console.error(
-                `Unable to sync job ${job.job_id}`,
-                error
-            );
-
+            console.error(`Unable to sync job ${job.job_id}`, error);
             if (isAwsAuthenticationError(error)) {
                 openCredentialsForAwsError();
             }
@@ -2992,111 +1751,78 @@ async function syncRunningJobsGlobally(jobs) {
     }
 }
 
+let snapshotDashboardCountdownTimer = null;
+let secondsRemaining = 15;
+
 function startSnapshotDashboardPolling() {
     stopSnapshotDashboardPolling();
-
     loadSnapshotDashboard();
+    secondsRemaining = 15;
 
-    state.snapshotDashboardTimer =
-        setInterval(() => {
-            if (
-                state.currentPage ===
-                "snapshot-dashboard"
-            ) {
-                loadSnapshotDashboard();
-            }
+    state.snapshotDashboardTimer = setInterval(() => {
+        const toggle = document.getElementById("auto-refresh-toggle");
+        if (toggle && !toggle.checked) return;
 
-        }, SNAPSHOT_DASHBOARD_POLL_INTERVAL);
+        if (state.currentPage === "snapshot-dashboard") {
+            loadSnapshotDashboard();
+            secondsRemaining = 15;
+        }
+    }, SNAPSHOT_DASHBOARD_POLL_INTERVAL);
+
+    snapshotDashboardCountdownTimer = setInterval(() => {
+        const toggle = document.getElementById("auto-refresh-toggle");
+        const badge = document.getElementById("refresh-countdown-badge");
+        if (!badge) return;
+
+        if (toggle && !toggle.checked) {
+            badge.textContent = "Paused";
+            return;
+        }
+
+        secondsRemaining--;
+        if (secondsRemaining < 0) {
+            secondsRemaining = 15;
+        }
+        badge.textContent = `${secondsRemaining}s`;
+    }, 1000);
 }
 
 function stopSnapshotDashboardPolling() {
-    if (
-        state.snapshotDashboardTimer
-    ) {
-        clearInterval(
-            state.snapshotDashboardTimer
-        );
-
-        state.snapshotDashboardTimer =
-            null;
+    if (state.snapshotDashboardTimer) {
+        clearInterval(state.snapshotDashboardTimer);
+        state.snapshotDashboardTimer = null;
+    }
+    if (snapshotDashboardCountdownTimer) {
+        clearInterval(snapshotDashboardCountdownTimer);
+        snapshotDashboardCountdownTimer = null;
     }
 }
 
 function renderSnapshotDashboard(data) {
-    const summary =
-        data.summary || {};
+    const summary = data.summary || {};
 
-    if ($("sd-total-jobs")) {
-        $("sd-total-jobs").textContent =
-            Number(
-                summary.total_jobs ||
-                0
-            );
-    }
+    if ($("sd-total-jobs")) $("sd-total-jobs").textContent = Number(summary.total_jobs || 0);
+    if ($("sd-running-jobs")) $("sd-running-jobs").textContent = Number(summary.running_jobs || 0);
+    if ($("sd-total-snapshots")) $("sd-total-snapshots").textContent = Number(summary.total_snapshots || 0);
+    if ($("sd-completed-snapshots")) $("sd-completed-snapshots").textContent = Number(summary.completed_snapshots || 0);
+    if ($("sd-failed-snapshots")) $("sd-failed-snapshots").textContent = Number(summary.failed_snapshots || 0);
 
-    if ($("sd-running-jobs")) {
-        $("sd-running-jobs").textContent =
-            Number(
-                summary.running_jobs ||
-                0
-            );
-    }
-
-    if ($("sd-total-snapshots")) {
-        $("sd-total-snapshots").textContent =
-            Number(
-                summary.total_snapshots ||
-                0
-            );
-    }
-
-    if ($("sd-completed-snapshots")) {
-        $("sd-completed-snapshots").textContent =
-            Number(
-                summary.completed_snapshots ||
-                0
-            );
-    }
-
-    if ($("sd-failed-snapshots")) {
-        $("sd-failed-snapshots").textContent =
-            Number(
-                summary.failed_snapshots ||
-                0
-            );
-    }
-
-    renderSnapshotJobs(
-        Array.isArray(data.jobs)
-            ? data.jobs
-            : []
-    );
+    renderSnapshotJobs(Array.isArray(data.jobs) ? data.jobs : []);
 }
 
 function renderSnapshotJobs(jobs) {
-    const container =
-        $("snapshot-jobs-table");
-
-    if (!container) {
-        return;
-    }
+    const container = $("snapshot-jobs-table");
+    if (!container) return;
 
     if (!jobs.length) {
-        container.innerHTML =
-            `<div class="empty-state">
-                No snapshot jobs found.
-            </div>`;
-
+        container.innerHTML = `<div class="empty-state">No snapshot jobs found.</div>`;
         return;
     }
 
     container.innerHTML = `
         <div class="table-wrapper">
-
             <table>
-
                 <thead>
-
                     <tr>
                         <th>Job</th>
                         <th>Account</th>
@@ -3111,144 +1837,39 @@ function renderSnapshotJobs(jobs) {
                         <th>Created By</th>
                         <th>Started</th>
                     </tr>
-
                 </thead>
-
                 <tbody>
-
                     ${jobs.map(job => `
                         <tr>
-
                             <td>
-
-                                <button
-                                    type="button"
-                                    class="link-button job-details"
-                                    data-job-id="${escapeHtml(
-                                        job.job_id ||
-                                        ""
-                                    )}"
-                                >
-                                    ${escapeHtml(
-                                        job.job_id ||
-                                        "-"
-                                    )}
+                                <button type="button" class="link-button job-details" data-job-id="${escapeHtml(job.job_id || "")}">
+                                    ${escapeHtml(job.job_id || "-")}
                                 </button>
-
                             </td>
-
+                            <td>${escapeHtml(job.account_name || "-")}</td>
+                            <td><strong>${escapeHtml(job.region || "-")}</strong></td>
                             <td>
-                                ${escapeHtml(
-                                    job.account_name ||
-                                    "-"
-                                )}
-                            </td>
-
-                            <td>
-                                <strong>
-                                    ${escapeHtml(
-                                        job.region ||
-                                        "-"
-                                    )}
-                                </strong>
-                            </td>
-
-                            <td>
-                                <span class="status ${escapeHtml(
-                                    job.status ||
-                                    ""
-                                )}">
-                                    ${escapeHtml(
-                                        job.status ||
-                                        "-"
-                                    )}
+                                <span class="status ${escapeHtml(job.status || "")}">
+                                    ${escapeHtml(job.status || "-")}
                                 </span>
                             </td>
-
+                            <td>${Number(job.total_instances || 0)}</td>
+                            <td>${Number(job.total_volumes || 0)}</td>
+                            <td>${Number(job.total_snapshots || 0)}</td>
+                            <td>${Number(job.completed_snapshots || 0)}</td>
+                            <td>${Number(job.failed_snapshots || 0)}</td>
                             <td>
-                                ${Number(
-                                    job.total_instances ||
-                                    0
-                                )}
-                            </td>
-
-                            <td>
-                                ${Number(
-                                    job.total_volumes ||
-                                    0
-                                )}
-                            </td>
-
-                            <td>
-                                ${Number(
-                                    job.total_snapshots ||
-                                    0
-                                )}
-                            </td>
-
-                            <td>
-                                ${Number(
-                                    job.completed_snapshots ||
-                                    0
-                                )}
-                            </td>
-
-                            <td>
-                                ${Number(
-                                    job.failed_snapshots ||
-                                    0
-                                )}
-                            </td>
-
-                            <td>
-
                                 <div class="progress">
-
-                                    <div
-                                        class="progress-bar"
-                                        style="width:${Math.max(
-                                            0,
-                                            Math.min(
-                                                100,
-                                                Number(
-                                                    job.progress ||
-                                                    0
-                                                )
-                                            )
-                                        )}%"
-                                    ></div>
-
+                                    <div class="progress-bar" style="width:${Math.max(0, Math.min(100, Number(job.progress || 0)))}%"></div>
                                 </div>
-
-                                <small>
-                                    ${Number(
-                                        job.progress ||
-                                        0
-                                    ).toFixed(1)}%
-                                </small>
-
+                                <small>${Number(job.progress || 0).toFixed(1)}%</small>
                             </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    job.created_by ||
-                                    "-"
-                                )}
-                            </td>
-
-                            <td>
-                                ${formatDate(
-                                    job.started_at
-                                )}
-                            </td>
-
+                            <td>${escapeHtml(job.created_by || "-")}</td>
+                            <td>${formatDate(job.started_at)}</td>
                         </tr>
                     `).join("")}
-
                 </tbody>
-
             </table>
-
         </div>
     `;
 }
@@ -3259,74 +1880,27 @@ function renderSnapshotJobs(jobs) {
 ========================================================= */
 
 async function showJobDetails(jobId) {
-    if (!jobId) {
-        return;
-    }
+    if (!jobId) return;
 
     try {
-        const data =
-            await api(
-                `/api/snapshot-jobs/${encodeURIComponent(
-                    jobId
-                )}`
-            );
+        const data = await api(`/api/snapshot-jobs/${encodeURIComponent(jobId)}`);
+        const job = data.job || {};
+        const items = Array.isArray(data.items) ? data.items : [];
 
-        const job =
-            data.job || {};
+        const modal = $("job-details-modal");
+        const content = $("job-details-content");
 
-        const items =
-            Array.isArray(data.items)
-                ? data.items
-                : [];
-
-        const modal =
-            $("job-details-modal");
-
-        const content =
-            $("job-details-content");
-
-        if (!modal || !content) {
-            return;
-        }
+        if (!modal || !content) return;
 
         content.innerHTML = `
             <div class="job-summary">
-
-                <h2>
-                    ${escapeHtml(
-                        job.job_id ||
-                        jobId
-                    )}
-                </h2>
-
-                <p>
-                    Status:
-                    <strong>
-                        ${escapeHtml(
-                            job.status ||
-                            "-"
-                        )}
-                    </strong>
-                </p>
-
-                <p>
-                    Progress:
-                    <strong>
-                        ${Number(
-                            job.progress ||
-                            0
-                        ).toFixed(1)}%
-                    </strong>
-                </p>
-
+                <h2>${escapeHtml(job.job_id || jobId)}</h2>
+                <p>Status: <strong>${escapeHtml(job.status || "-")}</strong></p>
+                <p>Progress: <strong>${Number(job.progress || 0).toFixed(1)}%</strong></p>
             </div>
-
             <div class="table-wrapper">
-
                 <table>
-
                     <thead>
-
                         <tr>
                             <th>Instance</th>
                             <th>Instance ID</th>
@@ -3336,102 +1910,37 @@ async function showJobDetails(jobId) {
                             <th>Progress</th>
                             <th>Error</th>
                         </tr>
-
                     </thead>
-
                     <tbody>
-
                         ${items.map(item => `
                             <tr>
-
-                                <td>
-                                    ${escapeHtml(
-                                        item.instance_name ||
-                                        "-"
-                                    )}
-                                </td>
-
-                                <td>
-                                    <code>
-                                        ${escapeHtml(
-                                            item.instance_id ||
-                                            "-"
-                                        )}
-                                    </code>
-                                </td>
-
-                                <td>
-                                    <code>
-                                        ${escapeHtml(
-                                            item.volume_id ||
-                                            "-"
-                                        )}
-                                    </code>
-                                </td>
-
-                                <td>
-                                    <code>
-                                        ${escapeHtml(
-                                            item.snapshot_id ||
-                                            "-"
-                                        )}
-                                    </code>
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        item.status ||
-                                        "-"
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${Number(
-                                        item.progress ||
-                                        0
-                                    )}%
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(
-                                        item.error_message ||
-                                        ""
-                                    )}
-                                </td>
-
+                                <td>${escapeHtml(item.instance_name || "-")}</td>
+                                <td><code>${escapeHtml(item.instance_id || "-")}</code></td>
+                                <td><code>${escapeHtml(item.volume_id || "-")}</code></td>
+                                <td><code>${escapeHtml(item.snapshot_id || "-")}</code></td>
+                                <td>${escapeHtml(item.status || "-")}</td>
+                                <td>${Number(item.progress || 0)}%</td>
+                                <td>${escapeHtml(item.error_message || "")}</td>
                             </tr>
                         `).join("")}
-
                     </tbody>
-
                 </table>
-
             </div>
         `;
 
         modal.classList.add("show");
 
     } catch (error) {
-        console.error(
-            "Unable to load job details:",
-            error
-        );
-
+        console.error("Unable to load job details:", error);
         if (isAwsAuthenticationError(error)) {
             openCredentialsForAwsError();
         }
-
-        toast(
-            error?.message ||
-            "Unable to load job details.",
-            "error"
-        );
+        toast(error?.message || "Unable to load job details.", "error");
     }
 }
 
 function closeJobDetails() {
-    $("job-details-modal")
-        ?.classList.remove("show");
+    $("job-details-modal")?.classList.remove("show");
 }
 
 
@@ -3440,302 +1949,112 @@ function closeJobDetails() {
 ========================================================= */
 
 function setupEventListeners() {
+    $("refresh-centralized-dashboard")?.addEventListener("click", loadCentralizedDashboard);
 
-    /* -----------------------------------------------------
-       PAGE NAVIGATION
-    ----------------------------------------------------- */
-
-    document
-        .querySelectorAll("[data-page]")
-        .forEach(button => {
-            button.addEventListener(
-                "click",
-                () => {
-                    showPage(
-                        button.dataset.page
-                    );
-                }
-            );
+    document.querySelectorAll("[data-page]").forEach(button => {
+        button.addEventListener("click", () => {
+            showPage(button.dataset.page);
         });
+    });
 
+    $("account-select")?.addEventListener("change", switchAccount);
+    $("region")?.addEventListener("change", regionChanged);
+    $("open-credentials")?.addEventListener("click", openCredentials);
+    $("close-credentials")?.addEventListener("click", closeCredentials);
+    $("dashboard-add-account")?.addEventListener("click", openCredentials);
+    $("account-add")?.addEventListener("click", saveAccount);
+    $("account-cancel")?.addEventListener("click", closeCredentials);
 
-    /* -----------------------------------------------------
-       ACCOUNT
-    ----------------------------------------------------- */
+    $("account-list")?.addEventListener("click", event => {
+        const useButton = event.target.closest(".account-use");
+        const editButton = event.target.closest(".account-edit");
+        const removeButton = event.target.closest(".account-remove");
 
-    $("account-select")
-        ?.addEventListener(
-            "change",
-            switchAccount
-        );
+        if (useButton) {
+            selectAccount(useButton.dataset.accountId);
+            return;
+        }
+        if (editButton) {
+            editAccount(editButton.dataset.accountId);
+            return;
+        }
+        if (removeButton) {
+            removeAccount(removeButton.dataset.accountId);
+        }
+    });
 
-    $("region")
-        ?.addEventListener(
-            "change",
-            regionChanged
-        );
+    $("instance-search")?.addEventListener("input", searchInstances);
+    $("snapshot-search")?.addEventListener("input", searchSnapshots);
 
-    $("open-credentials")
-        ?.addEventListener(
-            "click",
-            openCredentials
-        );
+    $("fetch-instances")?.addEventListener("click", loadInstancesWithVolumeValidation);
+    $("fetch-volumes")?.addEventListener("click", loadVolumes);
+    $("fetch-snapshots")?.addEventListener("click", loadSnapshots);
+    $("refresh-dashboard")?.addEventListener("click", loadDashboard);
+    $("refresh-snapshot-dashboard")?.addEventListener("click", loadSnapshotDashboard);
 
-    $("close-credentials")
-        ?.addEventListener(
-            "click",
-            closeCredentials
-        );
+    $("snapshot-instances")?.addEventListener("input", previewSnapshotInstances);
+    $("preview-instances")?.addEventListener("click", previewSnapshotInstances);
+    $("create-snapshots")?.addEventListener("click", createSnapshotsFromInstances);
 
-    $("dashboard-add-account")
-        ?.addEventListener(
-            "click",
-            openCredentials
-        );
+    $("snapshot-jobs-table")?.addEventListener("click", event => {
+        const button = event.target.closest(".job-details");
+        if (button) {
+            showJobDetails(button.dataset.jobId);
+        }
+    });
 
-    $("account-add")
-        ?.addEventListener(
-            "click",
-            saveAccount
-        );
+    $("close-job-details")?.addEventListener("click", closeJobDetails);
 
-    $("account-cancel")
-        ?.addEventListener(
-            "click",
-            closeCredentials
-        );
+    $("credential-modal")?.addEventListener("click", event => {
+        if (event.target === $("credential-modal")) {
+            closeCredentials();
+        }
+    });
 
-    $("account-list")
-        ?.addEventListener(
-            "click",
-            event => {
-                const useButton =
-                    event.target.closest(
-                        ".account-use"
-                    );
+    $("job-details-modal")?.addEventListener("click", event => {
+        if (event.target === $("job-details-modal")) {
+            closeJobDetails();
+        }
+    });
 
-                const editButton =
-                    event.target.closest(
-                        ".account-edit"
-                    );
+    const refreshBtn = document.getElementById("refresh-snapshot-dashboard");
+    const refreshIcon = document.getElementById("refresh-icon");
 
-                const removeButton =
-                    event.target.closest(
-                        ".account-remove"
-                    );
+    if (refreshBtn) {
+        refreshBtn.addEventListener("click", async () => {
+            if (refreshIcon) refreshIcon.classList.add("fa-spin");
+            secondsRemaining = 15;
+            await loadSnapshotDashboard();
+            setTimeout(() => {
+                if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+                toast("Snapshot jobs dashboard refreshed.", "success");
+            }, 400);
+        });
+    }
 
-                if (useButton) {
-                    selectAccount(
-                        useButton.dataset.accountId
-                    );
-
-                    return;
-                }
-
-                if (editButton) {
-                    editAccount(
-                        editButton.dataset.accountId
-                    );
-
-                    return;
-                }
-
-                if (removeButton) {
-                    removeAccount(
-                        removeButton.dataset.accountId
-                    );
-                }
+    const autoToggle = document.getElementById("auto-refresh-toggle");
+    if (autoToggle) {
+        autoToggle.addEventListener("change", (e) => {
+            if (e.target.checked) {
+                toast("Auto-refresh enabled (15s interval).", "success");
+                secondsRemaining = 15;
+            } else {
+                toast("Auto-refresh paused.", "info");
+                const badge = document.getElementById("refresh-countdown-badge");
+                if (badge) badge.textContent = "Paused";
             }
-        );
+        });
+    }
 
-
-    /* -----------------------------------------------------
-       SEARCH
-    ----------------------------------------------------- */
-
-    $("instance-search")
-        ?.addEventListener(
-            "input",
-            searchInstances
-        );
-
-    $("snapshot-search")
-        ?.addEventListener(
-            "input",
-            searchSnapshots
-        );
-
-
-    /* -----------------------------------------------------
-       DATA LOADING
-    ----------------------------------------------------- */
-
-    $("fetch-instances")
-        ?.addEventListener(
-            "click",
-            loadInstancesWithVolumeValidation
-        );
-
-    $("fetch-volumes")
-        ?.addEventListener(
-            "click",
-            loadVolumes
-        );
-
-    $("fetch-snapshots")
-        ?.addEventListener(
-            "click",
-            loadSnapshots
-        );
-
-    $("refresh-dashboard")
-        ?.addEventListener(
-            "click",
-            loadDashboard
-        );
-
-    $("refresh-snapshot-dashboard")
-        ?.addEventListener(
-            "click",
-            loadSnapshotDashboard
-        );
-
-
-    /* -----------------------------------------------------
-       CREATE SNAPSHOT
-    ----------------------------------------------------- */
-
-    $("snapshot-instances")
-        ?.addEventListener(
-            "input",
-            previewSnapshotInstances
-        );
-
-    $("preview-instances")
-        ?.addEventListener(
-            "click",
-            previewSnapshotInstances
-        );
-
-    $("create-snapshots")
-        ?.addEventListener(
-            "click",
-            createSnapshotsFromInstances
-        );
-
-
-    /* -----------------------------------------------------
-       SNAPSHOT REVERT
-    ----------------------------------------------------- */
-
-    $("revert-instance")
-        ?.addEventListener(
-            "change",
-            event => {
-                selectRevertInstance(
-                    event.target.value
-                );
+    const reauthBtn = document.getElementById("session-expired-reauth-btn");
+    if (reauthBtn) {
+        reauthBtn.addEventListener("click", () => {
+            document.getElementById("session-expired-modal")?.classList.remove("show");
+            if (typeof openCredentials === "function") {
+                openCredentials();
             }
-        );
-
-    $("revert-volumes")
-        ?.addEventListener(
-            "change",
-            event => {
-
-                const snapshotSelect =
-                    event.target.closest(
-                        ".revert-snapshot-select"
-                    );
-
-                if (snapshotSelect) {
-                    updateRevertSelection(
-                        snapshotSelect.dataset.volumeId,
-                        snapshotSelect.value
-                    );
-
-                    return;
-                }
-
-                const checkbox =
-                    event.target.closest(
-                        ".revert-volume-checkbox"
-                    );
-
-                if (checkbox) {
-                    updateRevertCheckbox(
-                        checkbox.dataset.volumeId,
-                        checkbox.checked
-                    );
-                }
-            }
-        );
-
-    $("revert-snapshot-button")
-        ?.addEventListener(
-            "click",
-            revertFromSnapshot
-        );
-
-
-    /* -----------------------------------------------------
-       JOB DETAILS
-    ----------------------------------------------------- */
-
-    $("snapshot-jobs-table")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                const button =
-                    event.target.closest(
-                        ".job-details"
-                    );
-
-                if (button) {
-                    showJobDetails(
-                        button.dataset.jobId
-                    );
-                }
-            }
-        );
-
-    $("close-job-details")
-        ?.addEventListener(
-            "click",
-            closeJobDetails
-        );
-
-
-    /* -----------------------------------------------------
-       MODALS
-    ----------------------------------------------------- */
-
-    $("credential-modal")
-        ?.addEventListener(
-            "click",
-            event => {
-                if (
-                    event.target ===
-                    $("credential-modal")
-                ) {
-                    closeCredentials();
-                }
-            }
-        );
-
-    $("job-details-modal")
-        ?.addEventListener(
-            "click",
-            event => {
-                if (
-                    event.target ===
-                    $("job-details-modal")
-                ) {
-                    closeJobDetails();
-                }
-            }
-        );
+        });
+    }
 }
 
 
@@ -3743,115 +2062,63 @@ function setupEventListeners() {
    GLOBAL ERROR HANDLING
 ========================================================= */
 
-window.addEventListener(
-    "error",
-    event => {
-        console.error(
-            "Global JavaScript error:",
-            event.error || event.message
-        );
-    }
-);
+window.addEventListener("error", event => {
+    console.error("Global JavaScript error:", event.error || event.message);
+});
 
-window.addEventListener(
-    "unhandledrejection",
-    event => {
-        console.error(
-            "Unhandled promise rejection:",
-            event.reason
-        );
-
-        if (isAwsAuthenticationError(event.reason)) {
-            openCredentialsForAwsError();
-        }
+window.addEventListener("unhandledrejection", event => {
+    console.error("Unhandled promise rejection:", event.reason);
+    if (isAwsAuthenticationError(event.reason)) {
+        openCredentialsForAwsError();
     }
-);
+});
 
 
 /* =========================================================
    CLEANUP
 ========================================================= */
 
-window.addEventListener(
-    "beforeunload",
-    () => {
-        stopSnapshotPolling();
-        stopSnapshotDashboardPolling();
-    }
-);
+window.addEventListener("beforeunload", () => {
+    stopSnapshotPolling();
+    stopSnapshotDashboardPolling();
+});
 
 
 /* =========================================================
    INITIALIZATION
 ========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-        console.log(
-            "AWS Snapshot Portal initializing..."
-        );
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("AWS Snapshot Portal initializing...");
 
-        try {
-            loadAccounts();
+    try {
+        loadAccounts();
+        updateAccountSelector();
+        updateRegionFromAccount();
+        updateSelectedAccountUI();
+        updateVolumeTotals();
+        setupEventListeners();
+        showPage("dashboard");
 
-            updateAccountSelector();
+        console.log("AWS Snapshot Portal ready.");
+    } catch (error) {
+        console.error("FATAL APPLICATION INITIALIZATION ERROR:", error);
+        const message = error?.message || "Unknown initialization error.";
 
-            updateRegionFromAccount();
+        toast(`Application initialization failed: ${message}`, "error");
 
-            updateSelectedAccountUI();
+        document.querySelectorAll(".page").forEach(page => {
+            page.classList.remove("active");
+        });
 
-            updateVolumeTotals();
+        const dashboard = $("dashboard");
+        if (dashboard) {
+            dashboard.classList.add("active");
+        }
 
-            setupEventListeners();
-
-            showPage(
-                "dashboard"
-            );
-
-            console.log(
-                "AWS Snapshot Portal ready."
-            );
-
-        } catch (error) {
-            console.error(
-                "FATAL APPLICATION INITIALIZATION ERROR:",
-                error
-            );
-
-            const message =
-                error?.message ||
-                "Unknown initialization error.";
-
-            toast(
-                `Application initialization failed: ${message}`,
-                "error"
-            );
-
-            document
-                .querySelectorAll(".page")
-                .forEach(page => {
-                    page.classList.remove(
-                        "active"
-                    );
-                });
-
-            const dashboard =
-                $("dashboard");
-
-            if (dashboard) {
-                dashboard.classList.add(
-                    "active"
-                );
-            }
-
-            const dashboardMessage =
-                $("dashboard-message");
-
-            if (dashboardMessage) {
-                dashboardMessage.textContent =
-                    `Application error: ${message}`;
-            }
+        const dashboardMessage = $("dashboard-message");
+        if (dashboardMessage) {
+            dashboardMessage.textContent = `Application error: ${message}`;
         }
     }
-);
+});
