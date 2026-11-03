@@ -2189,7 +2189,278 @@ window.addEventListener("unhandledrejection", event => {
     }
 });
 
+/* =========================================================
+   RESTORATION QUEUE MANAGEMENT
+========================================================= */
 
+// Initialize queue storage in state if not present
+if (!state.revert.queue) {
+    state.revert.queue = [];
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const addToQueueBtn = document.getElementById("add-to-queue-btn");
+    if (addToQueueBtn) {
+        addToQueueBtn.addEventListener("click", addRevertTaskToQueue);
+    }
+
+    const executeBtn = document.getElementById("restore-snapshot-button");
+    if (executeBtn) {
+        executeBtn.addEventListener("click", executeRevertQueue);
+    }
+});
+
+function addRevertTaskToQueue() {
+    const instanceSelect = document.getElementById("restore-instance-select");
+    const volumeSelect = document.getElementById("restore-volume-select");
+    const snapshotSelect = document.getElementById("restore-snapshot-select");
+
+    const instanceId = instanceSelect?.value;
+    const instanceName = instanceSelect?.options[instanceSelect.selectedIndex]?.text || instanceId;
+    
+    // Get all selected volumes from the multi-select dropdown
+    const selectedVolumeOptions = Array.from(volumeSelect?.selectedOptions || []);
+    const snapshotId = snapshotSelect?.value;
+    const snapshotText = snapshotSelect?.options[snapshotSelect.selectedIndex]?.text || snapshotId;
+
+    if (!instanceId) {
+        toast("Please select an EC2 instance first.", "error");
+        return;
+    }
+
+    if (!selectedVolumeOptions.length) {
+        toast("Please select at least one volume to replace.", "error");
+        return;
+    }
+
+    if (!snapshotId) {
+        toast("Please select a target snapshot to map.", "error");
+        return;
+    }
+
+    // Add each selected volume mapping as a task into the queue
+    selectedVolumeOptions.forEach(volOpt => {
+        const volumeId = volOpt.value;
+        const volumeLabel = volOpt.text;
+
+        // Check if task already exists in queue
+        const exists = state.revert.queue.some(
+            task => task.instanceId === instanceId && task.volumeId === volumeId
+        );
+
+        if (!exists) {
+            state.revert.queue.push({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                instanceId,
+                instanceName,
+                volumeId,
+                volumeLabel,
+                snapshotId,
+                snapshotText
+            });
+        }
+    });
+
+    renderRevertQueue();
+    toast("Volume mapping added to restoration queue.", "success");
+}
+
+function removeTaskFromQueue(taskId) {
+    state.revert.queue = state.revert.queue.filter(task => task.id !== taskId);
+    renderRevertQueue();
+    toast("Task removed from queue.", "info");
+}
+
+function renderRevertQueue() {
+    const container = document.getElementById("restore-queue-list");
+    const emptyText = document.getElementById("queue-empty-text");
+    const counterBadge = document.getElementById("queue-counter-badge");
+    const executeBtn = document.getElementById("restore-snapshot-button");
+
+    if (!container) return;
+
+    if (counterBadge) {
+        counterBadge.textContent = `${state.revert.queue.length} task${state.revert.queue.length === 1 ? "" : "s"} queued`;
+    }
+
+    if (!state.revert.queue.length) {
+        if (emptyText) emptyText.style.display = "block";
+        container.innerHTML = `<p id="queue-empty-text" style="color: var(--text-muted, #888); font-size: 12px; text-align: center; margin: 8px 0;">No restore tasks added to queue yet.</p>`;
+        if (executeBtn) executeBtn.disabled = true;
+        return;
+    }
+
+    if (emptyText) emptyText.style.display = "none";
+
+    container.innerHTML = state.revert.queue.map(task => `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color, #334155); padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; font-size: 12px;">
+            <div>
+                <strong style="color: #f8fafc;">Instance:</strong> ${escapeHtml(task.instanceId)}<br>
+                <strong style="color: #f8fafc;">Volume:</strong> <code>${escapeHtml(task.volumeId)}</code><br>
+                <strong style="color: #f8fafc;">Snapshot:</strong> <code>${escapeHtml(task.snapshotId)}</code>
+            </div>
+            <button type="button" onclick="removeTaskFromQueue('${task.id}')" style="background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid #f87171; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;">
+                Remove
+            </button>
+        </div>
+    `).join("");
+
+    if (executeBtn) {
+        executeBtn.disabled = false;
+    }
+}
+
+async function executeRevertQueue() {
+    if (!state.revert.queue.length) {
+        toast("No tasks in the execution queue.", "error");
+        return;
+    }
+
+    if (!confirm(`Execute parallel restoration for ${state.revert.queue.length} queued task(s)? This will stop the target instances.`)) {
+        return;
+    }
+
+    try {
+        setLoading(true, "Dispatching parallel volume restoration tasks...");
+
+        const requestBody = {
+            ...getRequestBody(),
+            tasks: state.revert.queue
+        };
+
+        const data = await api("/api/aws/revert-snapshots", {
+            method: "POST",
+            body: JSON.stringify(requestBody)
+        });
+
+        toast("Restoration jobs successfully dispatched!", "success");
+        state.revert.queue = [];
+        renderRevertQueue();
+
+        // Redirect to Revert Jobs dashboard to monitor progress
+        if (typeof showPage === "function") {
+            showPage("revert-dashboard");
+        }
+
+    } catch (error) {
+        console.error("Revert execution failed:", error);
+        toast(error?.message || "Failed to execute volume restoration pipeline.", "error");
+    } finally {
+        setLoading(false);
+    }
+}
+/* =========================================================
+   FILTERED REVERT WORKFLOW (INSTANCE-BOUND)
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+    const instanceSelect = document.getElementById("restore-instance-select");
+    if (instanceSelect) {
+        instanceSelect.addEventListener("change", (e) => {
+            const instanceId = e.target.value;
+            if (!instanceId) {
+                resetRevertFormSteps();
+                return;
+            }
+            loadInstanceVolumesLocally(instanceId);
+        });
+    }
+
+    const volumeSelect = document.getElementById("restore-volume-select");
+    if (volumeSelect) {
+        volumeSelect.addEventListener("change", () => {
+            const selectedVolumeIds = Array.from(volumeSelect.selectedOptions).map(opt => opt.value);
+            if (selectedVolumeIds.length > 0) {
+                loadSnapshotsForVolumesLocally(selectedVolumeIds);
+            }
+        });
+    }
+});
+
+function loadInstanceVolumesLocally(instanceId) {
+    const volumeSelect = document.getElementById("restore-volume-select");
+    const snapshotSelect = document.getElementById("restore-snapshot-select");
+    
+    if (!volumeSelect) return;
+
+    // Filter state.volumes to only volumes attached to this specific instance ID
+    const instanceVolumes = state.volumes.filter(vol => {
+        const attachedTo = String(vol.attachedInstance || vol.instanceId || vol.instance_id || "").trim();
+        return attachedTo === String(instanceId).trim();
+    });
+
+    if (!instanceVolumes.length) {
+        volumeSelect.innerHTML = `<option value="">No EBS volumes attached to this instance</option>`;
+        volumeSelect.disabled = true;
+        toast("No volumes found for this specific instance.", "error");
+        return;
+    }
+
+    volumeSelect.innerHTML = instanceVolumes.map(vol => `
+        <option value="${escapeHtml(vol.volumeId || vol.volume_id)}">
+            ${escapeHtml(vol.name || vol.volumeId || vol.volume_id)} (${escapeHtml(vol.size || 0)} GB) - [${escapeHtml(vol.state || "in-use")}]
+        </option>
+    `).join("");
+
+    volumeSelect.disabled = false;
+    
+    if (snapshotSelect) {
+        snapshotSelect.innerHTML = `<option value="">Select volume(s) first</option>`;
+        snapshotSelect.disabled = true;
+    }
+
+    toast(`${instanceVolumes.length} attached volume(s) loaded for instance.`, "success");
+}
+
+function loadSnapshotsForVolumesLocally(volumeIds) {
+    const snapshotSelect = document.getElementById("restore-snapshot-select");
+    const addToQueueBtn = document.getElementById("add-to-queue-btn");
+    
+    if (!snapshotSelect) return;
+
+    // Filter state.snapshots to only snapshots belonging to the selected volume IDs
+    const matchingSnapshots = state.snapshots.filter(snap => {
+        const snapVolId = String(snap.volumeId || snap.volume_id || "").trim();
+        return volumeIds.includes(snapVolId);
+    });
+
+    if (!matchingSnapshots.length) {
+        snapshotSelect.innerHTML = `<option value="">No snapshots found for selected volume(s)</option>`;
+        snapshotSelect.disabled = true;
+        if (addToQueueBtn) addToQueueBtn.disabled = true;
+        toast("No matching snapshots found for these volumes.", "error");
+        return;
+    }
+
+    snapshotSelect.innerHTML = matchingSnapshots.map(snap => `
+        <option value="${escapeHtml(snap.snapshotId || snap.snapshot_id)}">
+            [${escapeHtml(snap.volumeId || snap.volume_id)}] ${escapeHtml(snap.snapshotId || snap.snapshot_id)} — ${formatDate(snap.startTime || snap.start_time)} (${escapeHtml(snap.progress || "100%")})
+        </option>
+    `).join("");
+
+    snapshotSelect.disabled = false;
+    if (addToQueueBtn) addToQueueBtn.disabled = false;
+
+    toast(`${matchingSnapshots.length} snapshot(s) loaded for selected volumes.`, "success");
+}
+
+function resetRevertFormSteps() {
+    const volumeSelect = document.getElementById("restore-volume-select");
+    const snapshotSelect = document.getElementById("restore-snapshot-select");
+    const addToQueueBtn = document.getElementById("add-to-queue-btn");
+
+    if (volumeSelect) {
+        volumeSelect.innerHTML = `<option value="">Select an instance first</option>`;
+        volumeSelect.disabled = true;
+    }
+    if (snapshotSelect) {
+        snapshotSelect.innerHTML = `<option value="">Select volume(s) first</option>`;
+        snapshotSelect.disabled = true;
+    }
+    if (addToQueueBtn) {
+        addToQueueBtn.disabled = true;
+    }
+}
 /* =========================================================
    CLEANUP
 ========================================================= */
@@ -2199,6 +2470,7 @@ window.addEventListener("beforeunload", () => {
     stopSnapshotDashboardPolling();
 });
 
+window.removeTaskFromQueue = removeTaskFromQueue;
 
 /* =========================================================
    INITIALIZATION
