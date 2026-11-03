@@ -287,6 +287,9 @@ async function initializeDatabase() {
         /*
          * Revert tasks table.
          */
+/*
+         * Revert tasks table.
+         */
         await connection.query(`
             CREATE TABLE IF NOT EXISTS revert_jobs (
 
@@ -312,7 +315,6 @@ async function initializeDatabase() {
               DEFAULT CHARSET=utf8mb4
               COLLATE=utf8mb4_unicode_ci
         `);
-
     } finally {
 
         connection.release();
