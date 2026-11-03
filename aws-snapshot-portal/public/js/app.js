@@ -17,15 +17,13 @@ const state = {
         volumes: [],
         snapshots: [],
         selectedSnapshots: {},
-        restoring: false,
-        queue: []
+        restoring: false
     },
 
     currentPage: "dashboard",
 
     snapshotDashboardTimer: null,
     snapshotPollingTimer: null,
-    revertDashboardTimer: null,
 
     editingAccountId: null
 };
@@ -43,7 +41,6 @@ const AWS_AUTH_ERROR_CODES = [
 
 const SNAPSHOT_POLL_INTERVAL = 15000;
 const SNAPSHOT_DASHBOARD_POLL_INTERVAL = 15000;
-const REVERT_DASHBOARD_POLL_INTERVAL = 15000;
 
 let toastTimer = null;
 let credentialPopupOpening = false;
@@ -418,7 +415,7 @@ function regionChanged() {
     }
 
     if (state.currentPage === "revert-snapshot") {
-        loadRevertPageData();
+        loadInstancesForRevert();
     }
 
     toast(
@@ -703,15 +700,18 @@ function saveAccount() {
 }
 
 function resetRevertState() {
-    const instanceSelect = document.getElementById('restore-instance-select');
-    if (instanceSelect) {
-        instanceSelect.value = '';
+    const regionSelect = document.getElementById('restore-region-select');
+    if (regionSelect) {
+        regionSelect.value = '';
+        regionSelect.dispatchEvent(new Event('change'));
     }
-    resetRevertFormSteps();
 }
 
 function loadInstancesForRevert() {
-    loadRevertPageData();
+    const regionSelect = document.getElementById('restore-region-select');
+    if (regionSelect && regionSelect.value) {
+        regionSelect.dispatchEvent(new Event('change'));
+    }
 }
 
 function renderAccountList() {
@@ -1642,14 +1642,11 @@ function showPage(page) {
 
     if (page !== "snapshots") stopSnapshotPolling();
     if (page !== "snapshot-dashboard") stopSnapshotDashboardPolling();
-    if (page !== "revert-dashboard") stopRevertDashboardPolling();
-
     if (page === "revert-snapshot") {
         loadRevertPageData();
     }
     if (page === "revert-dashboard") {
         loadRevertDashboard();
-        startRevertDashboardPolling();
     }
     if (page === "centralized-dashboard") {
         loadCentralizedDashboard();
@@ -1698,11 +1695,11 @@ function showPage(page) {
         startSnapshotDashboardPolling();
     }
     if (page === "revert-snapshot") {
-        loadRevertPageData();
+        resetRevertState();
+        loadInstancesForRevert();
     }
     if (page === "revert-dashboard") {
         loadRevertDashboard();
-        startRevertDashboardPolling();
     }
 }
 
@@ -1963,7 +1960,6 @@ function closeJobDetails() {
 function setupEventListeners() {
     $("refresh-centralized-dashboard")?.addEventListener("click", loadCentralizedDashboard);
     $("refresh-revert-dashboard")?.addEventListener("click", loadRevertDashboard);
-    $("refresh-revert-data")?.addEventListener("click", loadRevertPageData);
 
     document.querySelectorAll("[data-page]").forEach(button => {
         button.addEventListener("click", () => {
@@ -2070,66 +2066,6 @@ function setupEventListeners() {
         });
     }
 }
-/* -----------------------------------------------------
-       SNAPSHOT REVERT
-    ----------------------------------------------------- */
-
-    $("revert-instance")
-        ?.addEventListener(
-            "change",
-            event => {
-                selectRevertInstance(
-                    event.target.value
-                );
-            }
-        );
-
-    $("revert-volumes")
-        ?.addEventListener(
-            "change",
-            event => {
-
-                const snapshotSelect =
-                    event.target.closest(
-                        ".revert-snapshot-select"
-                    );
-
-                if (snapshotSelect) {
-                    updateRevertSelection(
-                        snapshotSelect.dataset.volumeId,
-                        snapshotSelect.value
-                    );
-
-                    return;
-                }
-
-                const checkbox =
-                    event.target.closest(
-                        ".revert-volume-checkbox"
-                    );
-
-                if (checkbox) {
-                    updateRevertCheckbox(
-                        checkbox.dataset.volumeId,
-                        checkbox.checked
-                    );
-                }
-            }
-        );
-
-    /*
-        IMPORTANT:
-        The button now has its own unique ID:
-        #revert-snapshot-button
-
-        The page itself remains:
-        #revert-snapshot
-    */
-    $("revert-snapshot-button")
-        ?.addEventListener(
-            "click",
-            revertFromSnapshot
-        );
 
 /* =========================================================
    REVERT & REVERT DASHBOARD CONTROLLER LOGIC
@@ -2151,24 +2087,24 @@ async function loadRevertPageData() {
     if (sessionRegionEl) sessionRegionEl.textContent = activeAccount.region || "us-west-1";
 
     try {
-        setLoading(true, "Loading instances and volumes for reversion...");
+        setLoading(true, "Loading instances for volume reversion...");
         const requestBody = JSON.stringify(getRequestBody());
 
-        const [instancesData, volumesData, snapshotsData] = await Promise.all([
+        const [instancesRes, volumesRes, snapshotsRes] = await Promise.all([
             api("/api/aws/instances", { method: "POST", body: requestBody }),
             api("/api/aws/volumes", { method: "POST", body: requestBody }),
             api("/api/aws/snapshots", { method: "POST", body: requestBody })
         ]);
 
-        state.instances = deduplicateInstances(instancesData.instances || []);
-        state.volumes = Array.isArray(volumesData.volumes) ? volumesData.volumes : [];
-        state.snapshots = Array.isArray(snapshotsData.snapshots) ? snapshotsData.snapshots : [];
+        state.instances = deduplicateInstances(instancesRes.instances || []);
+        state.volumes = Array.isArray(volumesRes.volumes) ? volumesRes.volumes : [];
+        state.snapshots = Array.isArray(snapshotsRes.snapshots) ? snapshotsRes.snapshots : [];
 
         renderRevertInstanceDropdown(state.instances);
-        toast("Revert workflow resources loaded successfully.", "success");
+        toast("Instances loaded for reversion.", "success");
     } catch (error) {
-        console.error("Failed to load revert page data:", error);
-        toast(error?.message || "Unable to load revert resources.", "error");
+        console.error("Failed to load instances for revert:", error);
+        toast(error?.message || "Unable to load instances.", "error");
     } finally {
         setLoading(false);
     }
@@ -2199,24 +2135,6 @@ async function loadRevertDashboard() {
         renderRevertDashboardData(data);
     } catch (error) {
         console.error("Failed to load revert dashboard:", error);
-    }
-}
-
-function startRevertDashboardPolling() {
-    stopRevertDashboardPolling();
-    loadRevertDashboard();
-
-    state.revertDashboardTimer = setInterval(() => {
-        if (state.currentPage === "revert-dashboard") {
-            loadRevertDashboard();
-        }
-    }, REVERT_DASHBOARD_POLL_INTERVAL);
-}
-
-function stopRevertDashboardPolling() {
-    if (state.revertDashboardTimer) {
-        clearInterval(state.revertDashboardTimer);
-        state.revertDashboardTimer = null;
     }
 }
 
@@ -2266,7 +2184,6 @@ function renderRevertDashboardData(data) {
     `;
 }
 
-
 /* =========================================================
    GLOBAL ERROR HANDLING
 ========================================================= */
@@ -2281,7 +2198,6 @@ window.addEventListener("unhandledrejection", event => {
         openCredentialsForAwsError();
     }
 });
-
 
 /* =========================================================
    RESTORATION QUEUE MANAGEMENT
@@ -2301,112 +2217,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (executeBtn) {
         executeBtn.addEventListener("click", executeRevertQueue);
     }
-
-    const instanceSelect = document.getElementById("restore-instance-select");
-    if (instanceSelect) {
-        instanceSelect.addEventListener("change", (e) => {
-            const instanceId = e.target.value;
-            if (!instanceId) {
-                resetRevertFormSteps();
-                return;
-            }
-            loadInstanceVolumesLocally(instanceId);
-        });
-    }
-
-    const volumeSelect = document.getElementById("restore-volume-select");
-    if (volumeSelect) {
-        volumeSelect.addEventListener("change", () => {
-            const selectedVolumeIds = Array.from(volumeSelect.selectedOptions).map(opt => opt.value);
-            if (selectedVolumeIds.length > 0) {
-                loadSnapshotsForVolumesLocally(selectedVolumeIds);
-            }
-        });
-    }
 });
-
-function loadInstanceVolumesLocally(instanceId) {
-    const volumeSelect = document.getElementById("restore-volume-select");
-    const snapshotSelect = document.getElementById("restore-snapshot-select");
-    
-    if (!volumeSelect) return;
-
-    const instanceVolumes = state.volumes.filter(vol => {
-        const attachedTo = String(vol.attachedInstance || vol.instanceId || vol.instance_id || "").trim();
-        return attachedTo === String(instanceId).trim();
-    });
-
-    if (!instanceVolumes.length) {
-        volumeSelect.innerHTML = `<option value="">No EBS volumes attached to this instance</option>`;
-        volumeSelect.disabled = true;
-        toast("No volumes found for this specific instance.", "error");
-        return;
-    }
-
-    volumeSelect.innerHTML = instanceVolumes.map(vol => `
-        <option value="${escapeHtml(vol.volumeId || vol.volume_id)}">
-            ${escapeHtml(vol.name || vol.volumeId || vol.volume_id)} (${escapeHtml(vol.size || 0)} GB) - [${escapeHtml(vol.state || "in-use")}]
-        </option>
-    `).join("");
-
-    volumeSelect.disabled = false;
-    
-    if (snapshotSelect) {
-        snapshotSelect.innerHTML = `<option value="">Select volume(s) first</option>`;
-        snapshotSelect.disabled = true;
-    }
-
-    toast(`${instanceVolumes.length} attached volume(s) loaded for instance.`, "success");
-}
-
-function loadSnapshotsForVolumesLocally(volumeIds) {
-    const snapshotSelect = document.getElementById("restore-snapshot-select");
-    const addToQueueBtn = document.getElementById("add-to-queue-btn");
-    
-    if (!snapshotSelect) return;
-
-    const matchingSnapshots = state.snapshots.filter(snap => {
-        const snapVolId = String(snap.volumeId || snap.volume_id || "").trim();
-        return volumeIds.includes(snapVolId);
-    });
-
-    if (!matchingSnapshots.length) {
-        snapshotSelect.innerHTML = `<option value="">No snapshots found for selected volume(s)</option>`;
-        snapshotSelect.disabled = true;
-        if (addToQueueBtn) addToQueueBtn.disabled = true;
-        toast("No matching snapshots found for these volumes.", "error");
-        return;
-    }
-
-    snapshotSelect.innerHTML = matchingSnapshots.map(snap => `
-        <option value="${escapeHtml(snap.snapshotId || snap.snapshot_id)}">
-            [${escapeHtml(snap.volumeId || snap.volume_id)}] ${escapeHtml(snap.snapshotId || snap.snapshot_id)} — ${formatDate(snap.startTime || snap.start_time)} (${escapeHtml(snap.progress || "100%")})
-        </option>
-    `).join("");
-
-    snapshotSelect.disabled = false;
-    if (addToQueueBtn) addToQueueBtn.disabled = false;
-
-    toast(`${matchingSnapshots.length} snapshot(s) loaded for selected volumes.`, "success");
-}
-
-function resetRevertFormSteps() {
-    const volumeSelect = document.getElementById("restore-volume-select");
-    const snapshotSelect = document.getElementById("restore-snapshot-select");
-    const addToQueueBtn = document.getElementById("add-to-queue-btn");
-
-    if (volumeSelect) {
-        volumeSelect.innerHTML = `<option value="">Select an instance first</option>`;
-        volumeSelect.disabled = true;
-    }
-    if (snapshotSelect) {
-        snapshotSelect.innerHTML = `<option value="">Select volume(s) first</option>`;
-        snapshotSelect.disabled = true;
-    }
-    if (addToQueueBtn) {
-        addToQueueBtn.disabled = true;
-    }
-}
 
 function addRevertTaskToQueue() {
     const instanceSelect = document.getElementById("restore-instance-select");
@@ -2544,19 +2355,127 @@ async function executeRevertQueue() {
     }
 }
 
+/* =========================================================
+   FILTERED REVERT WORKFLOW (INSTANCE-BOUND)
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+    const instanceSelect = document.getElementById("restore-instance-select");
+    if (instanceSelect) {
+        instanceSelect.addEventListener("change", (e) => {
+            const instanceId = e.target.value;
+            if (!instanceId) {
+                resetRevertFormSteps();
+                return;
+            }
+            loadInstanceVolumesLocally(instanceId);
+        });
+    }
+
+    const volumeSelect = document.getElementById("restore-volume-select");
+    if (volumeSelect) {
+        volumeSelect.addEventListener("change", () => {
+            const selectedVolumeIds = Array.from(volumeSelect.selectedOptions).map(opt => opt.value);
+            if (selectedVolumeIds.length > 0) {
+                loadSnapshotsForVolumesLocally(selectedVolumeIds);
+            }
+        });
+    }
+});
+
+function loadInstanceVolumesLocally(instanceId) {
+    const volumeSelect = document.getElementById("restore-volume-select");
+    const snapshotSelect = document.getElementById("restore-snapshot-select");
+    
+    if (!volumeSelect) return;
+
+    const instanceVolumes = state.volumes.filter(vol => {
+        const attachedTo = String(vol.attachedInstance || vol.instanceId || vol.instance_id || "").trim();
+        return attachedTo === String(instanceId).trim();
+    });
+
+    if (!instanceVolumes.length) {
+        volumeSelect.innerHTML = `<option value="">No EBS volumes attached to this instance</option>`;
+        volumeSelect.disabled = true;
+        toast("No volumes found for this specific instance.", "error");
+        return;
+    }
+
+    volumeSelect.innerHTML = instanceVolumes.map(vol => `
+        <option value="${escapeHtml(vol.volumeId || vol.volume_id)}">
+            ${escapeHtml(vol.name || vol.volumeId || vol.volume_id)} (${escapeHtml(vol.size || 0)} GB) - [${escapeHtml(vol.state || "in-use")}]
+        </option>
+    `).join("");
+
+    volumeSelect.disabled = false;
+    
+    if (snapshotSelect) {
+        snapshotSelect.innerHTML = `<option value="">Select volume(s) first</option>`;
+        snapshotSelect.disabled = true;
+    }
+
+    toast(`${instanceVolumes.length} attached volume(s) loaded for instance.`, "success");
+}
+
+function loadSnapshotsForVolumesLocally(volumeIds) {
+    const snapshotSelect = document.getElementById("restore-snapshot-select");
+    const addToQueueBtn = document.getElementById("add-to-queue-btn");
+    
+    if (!snapshotSelect) return;
+
+    const matchingSnapshots = state.snapshots.filter(snap => {
+        const snapVolId = String(snap.volumeId || snap.volume_id || "").trim();
+        return volumeIds.includes(snapVolId);
+    });
+
+    if (!matchingSnapshots.length) {
+        snapshotSelect.innerHTML = `<option value="">No snapshots found for selected volume(s)</option>`;
+        snapshotSelect.disabled = true;
+        if (addToQueueBtn) addToQueueBtn.disabled = true;
+        toast("No matching snapshots found for these volumes.", "error");
+        return;
+    }
+
+    snapshotSelect.innerHTML = matchingSnapshots.map(snap => `
+        <option value="${escapeHtml(snap.snapshotId || snap.snapshot_id)}">
+            [${escapeHtml(snap.volumeId || snap.volume_id)}] ${escapeHtml(snap.snapshotId || snap.snapshot_id)} — ${formatDate(snap.startTime || snap.start_time)} (${escapeHtml(snap.progress || "100%")})
+        </option>
+    `).join("");
+
+    snapshotSelect.disabled = false;
+    if (addToQueueBtn) addToQueueBtn.disabled = false;
+
+    toast(`${matchingSnapshots.length} snapshot(s) loaded for selected volumes.`, "success");
+}
+
+function resetRevertFormSteps() {
+    const volumeSelect = document.getElementById("restore-volume-select");
+    const snapshotSelect = document.getElementById("restore-snapshot-select");
+    const addToQueueBtn = document.getElementById("add-to-queue-btn");
+
+    if (volumeSelect) {
+        volumeSelect.innerHTML = `<option value="">Select an instance first</option>`;
+        volumeSelect.disabled = true;
+    }
+    if (snapshotSelect) {
+        snapshotSelect.innerHTML = `<option value="">Select volume(s) first</option>`;
+        snapshotSelect.disabled = true;
+    }
+    if (addToQueueBtn) {
+        addToQueueBtn.disabled = true;
+    }
+}
 
 /* =========================================================
-   CLEANUP & EXPORTS
+   CLEANUP
 ========================================================= */
 
 window.addEventListener("beforeunload", () => {
     stopSnapshotPolling();
     stopSnapshotDashboardPolling();
-    stopRevertDashboardPolling();
 });
 
 window.removeTaskFromQueue = removeTaskFromQueue;
-
 
 /* =========================================================
    INITIALIZATION

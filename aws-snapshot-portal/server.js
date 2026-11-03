@@ -284,6 +284,35 @@ async function initializeDatabase() {
               COLLATE=utf8mb4_unicode_ci
         `);
 
+        /*
+         * Revert tasks table.
+         */
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS revert_jobs (
+
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+                job_id VARCHAR(100) NOT NULL,
+
+                instance_id VARCHAR(100) NOT NULL,
+
+                volume_id VARCHAR(100) NOT NULL,
+
+                snapshot_id VARCHAR(100) NOT NULL,
+
+                status VARCHAR(50) NOT NULL DEFAULT 'running',
+
+                started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                PRIMARY KEY (id),
+
+                KEY idx_revert_job_id (job_id)
+
+            ) ENGINE=InnoDB
+              DEFAULT CHARSET=utf8mb4
+              COLLATE=utf8mb4_unicode_ci
+        `);
+
     } finally {
 
         connection.release();
@@ -304,6 +333,18 @@ function generateJobId() {
         Math.random()
             .toString(36)
             .substring(2, 8)
+            .toUpperCase()
+    );
+}
+
+function generateRevertJobId() {
+    return (
+        "REV-" +
+        Date.now() +
+        "-" +
+        Math.random()
+            .toString(36)
+            .substring(2, 6)
             .toUpperCase()
     );
 }
@@ -2315,6 +2356,116 @@ app.post(
 
 
 /* =========================================================
+   REVERT / RESTORE SNAPSHOTS (PARALLEL QUEUE)
+========================================================= */
+
+app.post(
+    "/api/aws/revert-snapshots",
+    async (req, res) => {
+        try {
+            const { tasks } = req.body;
+
+            if (!Array.isArray(tasks) || !tasks.length) {
+                return res.status(400).json({
+                    success: false,
+                    error: "No restoration tasks provided."
+                });
+            }
+
+            const results = [];
+
+            for (const task of tasks) {
+                const { instanceId, volumeId, snapshotId } = task;
+
+                if (!instanceId || !volumeId || !snapshotId) {
+                    results.push({
+                        task,
+                        status: "Failed",
+                        error: "Missing instanceId, volumeId, or snapshotId."
+                    });
+                    continue;
+                }
+
+                const revertJobId = generateRevertJobId();
+
+                await pool.query(
+                    `
+                    INSERT INTO revert_jobs (job_id, instance_id, volume_id, snapshot_id, status)
+                    VALUES (?, ?, ?, ?, 'running')
+                    `,
+                    [revertJobId, instanceId, volumeId, snapshotId]
+                );
+
+                results.push({
+                    jobId: revertJobId,
+                    instanceId,
+                    volumeId,
+                    snapshotId,
+                    status: "Dispatched"
+                });
+            }
+
+            res.json({
+                success: true,
+                message: "Reversion queue processing initiated.",
+                results
+            });
+
+        } catch (error) {
+            console.error("Revert snapshots error:", error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+);
+
+
+/* =========================================================
+   REVERT DASHBOARD JOBS ENDPOINT
+========================================================= */
+
+app.get(
+    "/api/revert-dashboard",
+    async (req, res) => {
+        try {
+            const [jobs] = await pool.query(
+                `SELECT job_id, instance_id, volume_id, snapshot_id, status, started_at 
+                 FROM revert_jobs 
+                 ORDER BY started_at DESC LIMIT 50`
+            );
+
+            const [summaryRows] = await pool.query(
+                `SELECT 
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN status = 'running' THEN 1 ELSE 0 END) AS running,
+                    SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
+                    SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed
+                 FROM revert_jobs`
+            );
+
+            const summary = summaryRows[0] || { total: 0, running: 0, completed: 0, failed: 0 };
+
+            res.json({
+                success: true,
+                summary: {
+                    total: Number(summary.total || 0),
+                    running: Number(summary.running || 0),
+                    completed: Number(summary.completed || 0),
+                    failed: Number(summary.failed || 0)
+                },
+                jobs
+            });
+        } catch (error) {
+            console.error("Revert dashboard error:", error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    }
+);
+
+
+/* =========================================================
    SNAPSHOT JOBS
 ========================================================= */
 
@@ -3074,4 +3225,3 @@ app.post(
     }
 );
 start();
-
