@@ -2070,7 +2070,66 @@ function setupEventListeners() {
         });
     }
 }
+/* -----------------------------------------------------
+       SNAPSHOT REVERT
+    ----------------------------------------------------- */
 
+    $("revert-instance")
+        ?.addEventListener(
+            "change",
+            event => {
+                selectRevertInstance(
+                    event.target.value
+                );
+            }
+        );
+
+    $("revert-volumes")
+        ?.addEventListener(
+            "change",
+            event => {
+
+                const snapshotSelect =
+                    event.target.closest(
+                        ".revert-snapshot-select"
+                    );
+
+                if (snapshotSelect) {
+                    updateRevertSelection(
+                        snapshotSelect.dataset.volumeId,
+                        snapshotSelect.value
+                    );
+
+                    return;
+                }
+
+                const checkbox =
+                    event.target.closest(
+                        ".revert-volume-checkbox"
+                    );
+
+                if (checkbox) {
+                    updateRevertCheckbox(
+                        checkbox.dataset.volumeId,
+                        checkbox.checked
+                    );
+                }
+            }
+        );
+
+    /*
+        IMPORTANT:
+        The button now has its own unique ID:
+        #revert-snapshot-button
+
+        The page itself remains:
+        #revert-snapshot
+    */
+    $("revert-snapshot-button")
+        ?.addEventListener(
+            "click",
+            revertFromSnapshot
+        );
 
 /* =========================================================
    REVERT & REVERT DASHBOARD CONTROLLER LOGIC
