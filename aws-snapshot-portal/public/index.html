@@ -118,7 +118,16 @@
             <span>↶</span>
             Revert Snapshot
         </button>
-    </nav>
+
+        <button
+            class="nav-item"
+            data-page="revert-dashboard"
+            type="button"
+        >
+            <span>⏱</span>
+            Revert Jobs
+        </button> 
+   </nav>
 
     <div class="sidebar-footer">
         <span>AWS Snapshot Portal</span>
@@ -761,254 +770,213 @@
 
 </section> 
 
+<!-- =================================================
+     REVERT SNAPSHOT (CYBER-OPS SESSION-BOUND WORKFLOW)
+================================================== -->
 <section id="revert-snapshot" class="page">
 
     <div class="page-toolbar">
         <div>
-            <h2>Revert Snapshot</h2>
-            <p>Restore an EC2 instance volume from an existing EBS snapshot.</p>
+            <h2>Revert & Restore EC2 Volumes</h2>
+            <p>Seamlessly restore instance volumes using your active AWS session credentials.</p>
         </div>
         <div class="toolbar-actions">
             <button id="refresh-revert-data" class="btn secondary" type="button">
-                Refresh
+                <i class="fa-solid fa-rotate"></i> Refresh Resources
             </button>
         </div>
     </div>
-<!-- Add this input field inside your index.html form card, ideally at the top of Step 1 or above it -->
-<div class="form-group" style="margin-bottom: 16px;">
-    <label for="restore-account-input">AWS Account Label / Profile ID</label>
-    <input type="text" id="restore-account-input" class="form-control" placeholder="e.g., account-production or 178795222450" value="default-account" />
-    <small style="color: var(--text-muted, #888); font-size: 12px;">Used to prompt and cache credentials securely per AWS account scope.</small>
-</div>
-    <div class="restore-layout">
 
-        <!-- FORM CARD / WORKFLOW STEPS -->
+    <!-- ACTIVE SESSION CONTEXT BANNER -->
+    <div class="selected-account-banner" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color, #334155); border-radius: 10px; padding: 16px 20px;">
+        <div>
+            <span class="banner-label" style="font-size: 11px; text-transform: uppercase; color: var(--text-muted, #94a3b8); letter-spacing: 0.05em;">Bound AWS Account Session</span>
+            <strong id="revert-session-account" style="display: block; font-size: 15px; color: #f8fafc; margin-top: 2px;">No active account session</strong>
+        </div>
+        <div>
+            <span class="banner-label" style="font-size: 11px; text-transform: uppercase; color: var(--text-muted, #94a3b8); letter-spacing: 0.05em;">Target Region</span>
+            <strong id="revert-session-region" style="display: block; font-size: 15px; color: var(--primary, #38bdf8); margin-top: 2px;">-</strong>
+        </div>
+        <div class="connection-status connected" id="revert-session-status" style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+            Session Active
+        </div>
+    </div>
+
+    <div class="restore-layout" style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+
+        <!-- STEPPED WORKFLOW CONTAINER -->
         <div class="form-card restore-card">
-
-            <div class="restore-header">
-                <div class="restore-icon">↶</div>
+            <div class="restore-header" style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color, #334155); padding-bottom: 16px;">
+                <div class="restore-icon" style="font-size: 24px; color: var(--primary, #38bdf8);">↶</div>
                 <div>
-                    <h3>Restore EC2 Volume</h3>
-                    <p>Follow the sequence below to replace an existing EC2 volume with a volume created from a snapshot.</p>
+                    <h3 style="margin: 0; font-size: 18px; color: #fff;">Parallel Volume Reversion Pipeline</h3>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-muted, #94a3b8);">Queue and execute multi-volume EBS restorations safely.</p>
                 </div>
             </div>
 
-            <!-- STEP 1 -->
-            <div class="restore-step active">
+            <!-- STEP 1: SELECT INSTANCE -->
+            <div class="restore-step active" style="margin-bottom: 20px;">
                 <div class="restore-step-number">1</div>
-                <div class="restore-step-content">
-                    <div class="restore-step-title">
-                        <strong>Select Region</strong>
-                        <span id="restore-region-status" class="step-status required">Required</span>
+                <div class="restore-step-content" style="flex: 1;">
+                    <div class="restore-step-title" style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <strong>Select Target EC2 Instance</strong>
+                        <span id="restore-instance-status" class="step-status waiting">Required</span>
                     </div>
                     <div class="form-group">
-                        <label for="restore-region-select">AWS Region</label>
-                        <select id="restore-region-select">
-                            <option value="">Select region</option>
-                            <option value="us-east-2">us-east-2</option>
-                            <option value="us-west-1">us-west-1</option>
+                        <select id="restore-instance-select" class="form-control" style="width: 100%; padding: 10px; background: var(--bg-input, #1e1e2d); border: 1px solid var(--border-color, #334155); color: #fff; border-radius: 6px;">
+                            <option value="">Loading instances from active session...</option>
                         </select>
                     </div>
+                    <div id="restore-instance-info" class="restore-preview" style="margin-top: 8px; font-size: 12px; color: var(--text-muted, #94a3b8);"></div>
                 </div>
             </div>
 
-            <!-- STEP 2 -->
-            <div class="restore-step">
+            <!-- STEP 2: SELECT VOLUMES TO REPLACE -->
+            <div class="restore-step" style="margin-bottom: 20px;">
                 <div class="restore-step-number">2</div>
-                <div class="restore-step-content">
-                    <div class="restore-step-title">
-                        <strong>Select EC2 Instance</strong>
-                        <span id="restore-instance-status" class="step-status waiting">Waiting</span>
+                <div class="restore-step-content" style="flex: 1;">
+                    <div class="restore-step-title" style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <strong>Select Volume(s) to Replace</strong>
+                        <span id="restore-volume-status" class="step-status waiting">Waiting</span>
                     </div>
                     <div class="form-group">
-                        <label for="restore-instance-select">EC2 Instance</label>
-                        <select id="restore-instance-select" disabled>
-                            <option value="">Select an instance</option>
+                        <select id="restore-volume-select" class="form-control" multiple size="4" disabled style="width: 100%; padding: 10px; background: var(--bg-input, #1e1e2d); border: 1px solid var(--border-color, #334155); color: #fff; border-radius: 6px;">
+                            <option value="">Select an instance first</option>
                         </select>
                     </div>
-                    <div id="restore-instance-info" class="restore-preview"></div>
+                    <small style="color: var(--text-muted, #888); font-size: 12px;">Hold Ctrl/Cmd to select multiple volumes for parallel mapping.</small>
                 </div>
             </div>
 
-            <!-- STEP 3 -->
-     <!-- STEP 3: Replace old single select with a multi-select or checkbox-list container -->
-<div class="restore-step">
-    <div class="restore-step-number">3</div>
-    <div class="restore-step-content">
-        <div class="restore-step-title">
-            <strong>Select Volume(s) to Replace</strong>
-            <span id="restore-volume-status" class="step-status waiting">Waiting</span>
-        </div>
-        <div class="form-group">
-            <label for="restore-volume-select">Volumes to Replace (Hold Ctrl/Cmd to select multiple)</label>
-            <select id="restore-volume-select" class="form-control" multiple size="4" disabled>
-                <option value="">Select an instance first</option>
-            </select>
-        </div>
-        <small style="color: var(--text-muted, #888); font-size: 12px;">You can select multiple volumes for this instance. You will map snapshots to them in the next step.</small>
-        <div id="restore-volume-info" class="restore-preview"></div>
-    </div>
-</div>
-            <!-- STEP 4 -->
-<!-- Update Step 4 in your index.html to include the inline Add to Queue button next to the snapshot selector -->
-<div class="restore-step">
-    <div class="restore-step-number">4</div>
-    <div class="restore-step-content">
-        <div class="restore-step-title">
-            <strong>Map Snapshots to Selected Volumes</strong>
-            <span id="restore-snapshot-status" class="step-status waiting">Waiting</span>
-        </div>
-        <div class="form-group">
-            <label for="restore-snapshot-select">Available Snapshots (Associated across selected volumes)</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <select id="restore-snapshot-select" class="form-control" size="5" disabled style="flex: 1;">
-                    <option value="">Select volume(s) first</option>
-                </select>
-                <button type="button" id="add-to-queue-btn" class="btn btn-secondary" style="height: fit-content; white-space: nowrap; padding: 10px 16px;" disabled>Add to Queue</button>
-            </div>
-        </div>
-        <small style="color: var(--text-muted, #888); font-size: 12px;">Choose a snapshot mapping and click **Add to Queue** to build your parallel restoration list.</small>
-    </div>
-</div>            
-<!-- WORKFLOW PREVIEW -->
-            <div class="restore-workflow">
-                <div class="workflow-title">Restore Sequence</div>
-                <div class="workflow-item">
-                    <span class="workflow-number">1</span>
-                    <span>Power off EC2 instance</span>
-                </div>
-                <div class="workflow-arrow">↓</div>
-                <div class="workflow-item">
-                    <span class="workflow-number">2</span>
-                    <span>Detach existing EBS volume</span>
-                </div>
-                <div class="workflow-arrow">↓</div>
-                <div class="workflow-item">
-                    <span class="workflow-number">3</span>
-                    <span>Create new EBS volume from snapshot</span>
-                </div>
-                <div class="workflow-arrow">↓</div>
-                <div class="workflow-item">
-                    <span class="workflow-number">4</span>
-                    <span>Attach new volume to EC2 instance</span>
-                </div>
-                <div class="workflow-arrow">↓</div>
-                <div class="workflow-item">
-                    <span class="workflow-number">5</span>
-                    <span>Power on EC2 instance</span>
+            <!-- STEP 3: MAP SNAPSHOTS & QUEUE -->
+            <div class="restore-step" style="margin-bottom: 20px;">
+                <div class="restore-step-number">3</div>
+                <div class="restore-step-content" style="flex: 1;">
+                    <div class="restore-step-title" style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <strong>Map Snapshots & Build Queue</strong>
+                        <span id="restore-snapshot-status" class="step-status waiting">Waiting</span>
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select id="restore-snapshot-select" class="form-control" size="4" disabled style="flex: 1; padding: 10px; background: var(--bg-input, #1e1e2d); border: 1px solid var(--border-color, #334155); color: #fff; border-radius: 6px;">
+                                <option value="">Select volume(s) first</option>
+                            </select>
+                            <button type="button" id="add-to-queue-btn" class="btn btn-secondary" disabled style="height: fit-content; white-space: nowrap; padding: 10px 16px;">Add to Queue</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- WARNING -->
-            <div class="restore-warning">
-                <div class="restore-warning-icon">!</div>
-                <div>
-                    <strong>Important</strong>
-                    <p>This operation will stop the selected EC2 instance, detach the selected volume, create a replacement volume from the selected snapshot, attach the new volume using the same device name, and start the instance again.</p>
+            <!-- QUEUE MANAGEMENT PANEL -->
+            <div class="form-card restore-queue-panel" style="margin-top: 20px; padding: 16px; background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border-color, #334155); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h4 style="margin: 0; color: #fff; font-size: 14px;">Restoration Queue</h4>
+                    <span id="queue-counter-badge" class="restore-queue-badge" style="background: var(--primary, #38bdf8); color: #0f172a; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;">0 tasks queued</span>
                 </div>
-            </div>
-<!-- Add this Queue Management & Preview Panel inside index.html, right below your steps or above the execute button -->
-<div class="form-card restore-queue-panel" style="margin-top: 20px; padding: 20px; background: var(--bg-card, #161622); border: 1px solid var(--border-color, #2b2b40); border-radius: 8px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h4 style="margin: 0; color: var(--text-main, #ffffff); font-size: 16px;">Execution Queue Summary</h4>
-        <span id="queue-counter-badge" class="restore-queue-badge">0 tasks queued</span>
-    </div>
-    
-    <div id="restore-queue-list" style="max-height: 180px; overflow-y: auto; margin-bottom: 16px; border: 1px solid var(--border-color, #2b2b40); border-radius: 6px; padding: 8px; background: var(--bg-input, #1e1e2d);">
-        <p id="queue-empty-text" style="color: var(--text-muted, #888); font-size: 13px; text-align: center; margin: 10px 0;">No restore tasks added to the queue yet.</p>
-    </div>
-
-    <div style="display: flex; gap: 10px;">
-        <button type="button" id="add-to-queue-btn" class="btn btn-secondary" style="flex: 1;" disabled>Add Selection to Queue</button>
-        <button type="button" id="restore-snapshot-button" class="btn btn-primary" style="flex: 1;" disabled>Execute All in Parallel</button>
-    </div>
-</div>
-            <!-- ACTION -->
-            <div class="form-actions">
-                <button id="restore-snapshot-button" class="btn primary" type="button" disabled>
-                    Start Restore
+                <div id="restore-queue-list" style="max-height: 140px; overflow-y: auto; margin-bottom: 12px; border: 1px solid var(--border-color, #334155); border-radius: 6px; padding: 8px; background: var(--bg-input, #1e1e2d);">
+                    <p id="queue-empty-text" style="color: var(--text-muted, #888); font-size: 12px; text-align: center; margin: 8px 0;">No restore tasks added to queue yet.</p>
+                </div>
+                <button type="button" id="restore-snapshot-button" class="btn primary" disabled style="width: 100%;">
+                    Execute All Revert Tasks in Parallel
                 </button>
             </div>
 
         </div>
 
-        <!-- INFORMATION PANEL -->
-        <div class="content-card restore-info-card">
-            <div class="card-header">
-                <div>
-                    <h3>Restore Information</h3>
-                    <p>Current restore configuration</p>
-                </div>
+        <!-- TELEMETRY / INFO PANEL -->
+        <div class="content-card restore-info-card" style="background: var(--card, #0f172a); border: 1px solid var(--border-color, #334155); border-radius: 12px; padding: 20px; height: fit-content;">
+            <div class="card-header" style="margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 16px; color: #fff;">Revert Protocol</h3>
+                <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-muted, #94a3b8);">Automated safe-state orchestration</p>
             </div>
-
-            <div class="account-summary">
-                <div class="summary-item">
-                    <span>Region</span>
-                    <strong id="restore-summary-region">-</strong>
+            <div class="restore-info-list" style="display: flex; flex-direction: column; gap: 12px; font-size: 12px;">
+                <div style="display: flex; gap: 10px;">
+                    <span style="background: rgba(56, 189, 248, 0.1); color: var(--primary, #38bdf8); width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold;">1</span>
+                    <div><strong>Graceful Stop:</strong> EC2 instance is safely powered off.</div>
                 </div>
-                <div class="summary-item">
-                    <span>Instance</span>
-                    <strong id="restore-summary-instance">-</strong>
+                <div style="display: flex; gap: 10px;">
+                    <span style="background: rgba(56, 189, 248, 0.1); color: var(--primary, #38bdf8); width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold;">2</span>
+                    <div><strong>Volume Detach:</strong> Existing corrupted/old volume is detached.</div>
                 </div>
-                <div class="summary-item">
-                    <span>Old Volume</span>
-                    <strong id="restore-summary-old-volume">-</strong>
+                <div style="display: flex; gap: 10px;">
+                    <span style="background: rgba(56, 189, 248, 0.1); color: var(--primary, #38bdf8); width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold;">3</span>
+                    <div><strong>Snapshot Hydration:</strong> New EBS volume provisioned from snapshot.</div>
                 </div>
-                <div class="summary-item">
-                    <span>Snapshot</span>
-                    <strong id="restore-summary-snapshot">-</strong>
+                <div style="display: flex; gap: 10px;">
+                    <span style="background: rgba(56, 189, 248, 0.1); color: var(--primary, #38bdf8); width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold;">4</span>
+                    <div><strong>Re-attachment:</strong> Attached with original device mapping.</div>
                 </div>
-                <div class="summary-item">
-                    <span>Device</span>
-                    <strong id="restore-summary-device">-</strong>
-                </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="restore-info-list">
-                <div class="restore-info-item">
-                    <div class="restore-info-number">1</div>
-                    <div>
-                        <strong>Instance is stopped</strong>
-                        <p>The EC2 instance is powered off before the existing volume is detached.</p>
-                    </div>
-                </div>
-                <div class="restore-info-item">
-                    <div class="restore-info-number">2</div>
-                    <div>
-                        <strong>Existing volume is detached</strong>
-                        <p>The selected volume is removed from the instance without deleting it.</p>
-                    </div>
-                </div>
-                <div class="restore-info-item">
-                    <div class="restore-info-number">3</div>
-                    <div>
-                        <strong>Replacement volume is created</strong>
-                        <p>A new EBS volume is created from the selected snapshot in the same availability zone.</p>
-                    </div>
-                </div>
-                <div class="restore-info-item">
-                    <div class="restore-info-number">4</div>
-                    <div>
-                        <strong>Replacement volume is attached</strong>
-                        <p>The new volume is attached using the original device name.</p>
-                    </div>
-                </div>
-                <div class="restore-info-item">
-                    <div class="restore-info-number">5</div>
-                    <div>
-                        <strong>Instance is started</strong>
-                        <p>The EC2 instance is powered on after the new volume is attached.</p>
-                    </div>
+                <div style="display: flex; gap: 10px;">
+                    <span style="background: rgba(56, 189, 248, 0.1); color: var(--primary, #38bdf8); width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold;">5</span>
+                    <div><strong>Resume Operations:</strong> Instance is restarted.</div>
                 </div>
             </div>
         </div>
 
     </div>
 
-</section>    
+</section>
 
+
+<!-- =================================================
+     REVERT JOBS DASHBOARD
+================================================== -->
+<section id="revert-dashboard" class="page">
+
+    <div class="page-toolbar">
+        <div>
+            <h2>Revert & Restoration Jobs</h2>
+            <p>Monitor active and historical volume restoration tasks in real-time.</p>
+        </div>
+        <div class="toolbar-actions" style="display: flex; align-items: center; gap: 12px;">
+            <button id="refresh-revert-dashboard" class="btn primary" type="button">
+                <i class="fa-solid fa-rotate"></i> Refresh Jobs
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="margin-bottom: 24px;">
+        <div class="stat-card blue">
+            <div class="stat-icon">REV</div>
+            <div>
+                <span>Total Reverts</span>
+                <strong id="rd-total-jobs">0</strong>
+            </div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-icon">RUN</div>
+            <div>
+                <span>Restoring</span>
+                <strong id="rd-running-jobs">0</strong>
+            </div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">OK</div>
+            <div>
+                <span>Completed</span>
+                <strong id="rd-completed-jobs">0</strong>
+            </div>
+        </div>
+        <div class="stat-card red">
+            <div class="stat-icon">ERR</div>
+            <div>
+                <span>Failed</span>
+                <strong id="rd-failed-jobs">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <div class="card-header" style="margin-bottom: 16px;">
+            <h3>Active Restoration Pipeline</h3>
+            <p>Live tracking of volume replacement and instance state recovery</p>
+        </div>
+        <div id="revert-jobs-table" class="table-container">
+            <div class="empty-state">Loading revert jobs telemetry...</div>
+        </div>
+    </div>
+
+</section>
 <!-- =================================================
          ACCOUNT MODAL
     ================================================== -->

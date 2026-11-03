@@ -1642,7 +1642,12 @@ function showPage(page) {
 
     if (page !== "snapshots") stopSnapshotPolling();
     if (page !== "snapshot-dashboard") stopSnapshotDashboardPolling();
-
+    if (page === "revert-snapshot") {
+        loadRevertPageData();
+    }
+    if (page === "revert-dashboard") {
+        loadRevertDashboard();
+    }
     if (page === "centralized-dashboard") {
         loadCentralizedDashboard();
     }
@@ -2057,7 +2062,118 @@ function setupEventListeners() {
     }
 }
 
+/* =========================================================
+   REVERT & REVERT DASHBOARD CONTROLLER LOGIC
+========================================================= */
 
+async function loadRevertPageData() {
+    const activeAccount = getActiveAccount();
+    const sessionAccountEl = document.getElementById("revert-session-account");
+    const sessionRegionEl = document.getElementById("revert-session-region");
+
+    if (!activeAccount) {
+        if (sessionAccountEl) sessionAccountEl.textContent = "No active account session";
+        if (sessionRegionEl) sessionRegionEl.textContent = "-";
+        toast("Please connect an AWS account first.", "error");
+        return;
+    }
+
+    if (sessionAccountEl) sessionAccountEl.textContent = activeAccount.name || "Default Account";
+    if (sessionRegionEl) sessionRegionEl.textContent = activeAccount.region || "us-west-1";
+
+    try {
+        setLoading(true, "Loading instances for volume reversion...");
+        const requestBody = JSON.stringify(getRequestBody());
+
+        const data = await api("/api/aws/instances", {
+            method: "POST",
+            body: requestBody
+        });
+
+        state.instances = deduplicateInstances(data.instances || []);
+        renderRevertInstanceDropdown(state.instances);
+        toast("Instances loaded for reversion.", "success");
+    } catch (error) {
+        console.error("Failed to load instances for revert:", error);
+        toast(error?.message || "Unable to load instances.", "error");
+    } finally {
+        setLoading(false);
+    }
+}
+
+function renderRevertInstanceDropdown(instances) {
+    const select = document.getElementById("restore-instance-select");
+    if (!select) return;
+
+    if (!instances.length) {
+        select.innerHTML = `<option value="">No instances found in active region</option>`;
+        select.disabled = true;
+        return;
+    }
+
+    select.innerHTML = `<option value="">Select an instance...</option>` +
+        instances.map(inst => `
+            <option value="${escapeHtml(inst.instanceId || inst.instance_id)}">
+                ${escapeHtml(inst.name || "Unnamed")} (${escapeHtml(inst.instanceId || inst.instance_id)})
+            </option>
+        `).join("");
+    select.disabled = false;
+}
+
+async function loadRevertDashboard() {
+    try {
+        const data = await api("/api/revert-dashboard").catch(() => ({ success: true, jobs: [], summary: {} }));
+        renderRevertDashboardData(data);
+    } catch (error) {
+        console.error("Failed to load revert dashboard:", error);
+    }
+}
+
+function renderRevertDashboardData(data) {
+    const summary = data.summary || {};
+    if (document.getElementById("rd-total-jobs")) document.getElementById("rd-total-jobs").textContent = summary.total || 0;
+    if (document.getElementById("rd-running-jobs")) document.getElementById("rd-running-jobs").textContent = summary.running || 0;
+    if (document.getElementById("rd-completed-jobs")) document.getElementById("rd-completed-jobs").textContent = summary.completed || 0;
+    if (document.getElementById("rd-failed-jobs")) document.getElementById("rd-failed-jobs").textContent = summary.failed || 0;
+
+    const container = document.getElementById("revert-jobs-table");
+    if (!container) return;
+
+    const jobs = Array.isArray(data.jobs) ? data.jobs : [];
+    if (!jobs.length) {
+        container.innerHTML = `<div class="empty-state">No active or historical revert tasks found.</div>`;
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Job ID</th>
+                        <th>Instance</th>
+                        <th>Volume</th>
+                        <th>Snapshot</th>
+                        <th>Status</th>
+                        <th>Started At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${jobs.map(job => `
+                        <tr>
+                            <td><code>${escapeHtml(job.job_id || "-")}</code></td>
+                            <td>${escapeHtml(job.instance_id || "-")}</td>
+                            <td><code>${escapeHtml(job.volume_id || "-")}</code></td>
+                            <td><code>${escapeHtml(job.snapshot_id || "-")}</code></td>
+                            <td><span class="status ${escapeHtml(job.status || "")}">${escapeHtml(job.status || "-")}</span></td>
+                            <td>${formatDate(job.started_at)}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
 /* =========================================================
    GLOBAL ERROR HANDLING
 ========================================================= */
