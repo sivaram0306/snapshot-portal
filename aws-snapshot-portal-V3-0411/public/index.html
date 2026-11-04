@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>☁️ AWS EC2 Snapshot Portal</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<!-- =====================================================
+     GLOBAL UI
+===================================================== -->
+
+<div id="loading" class="loading-overlay">
+    <div class="loading-card">
+        <div class="spinner"></div>
+        <div id="loading-text">Loading...</div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+<aside class="sidebar">
+
+    <div class="brand">
+        <div class="cloud-logo">
+            <span>☁</span>
+        </div>
+
+        <div class="brand-info">
+            <strong>AWS Snapshot Portal</strong>
+            <small>EC2 Management</small>
+        </div>
+    </div>
+
+    <nav class="navigation">
+  <button
+    class="nav-item"
+    data-page="centralized-dashboard"
+    type="button"
+>
+    <span>🌐</span>
+    Global Dashboard
+</button>
+<!--        <button
+            class="nav-item active"
+            data-page="dashboard"
+            type="button"
+        >
+            <span>▦</span>
+            Dashboard
+        </button> -->
+
+        <button
+            class="nav-item"
+            data-page="instances"
+            type="button"
+        >
+            <span>▣</span>
+            Instances
+        </button>
+
+        <button
+            class="nav-item"
+            data-page="volumes"
+            type="button"
+        >
+            <span>◈</span>
+            Volumes
+        </button>
+
+        <button
+            class="nav-item"
+            data-page="snapshots"
+            type="button"
+        >
+            <span>◫</span>
+            Snapshots
+        </button>
+
+        <button
+            class="nav-item"
+            data-page="create-snapshot"
+            type="button"
+        >
+            <span>＋</span>
+            Create Snapshot
+        </button>
+
+        <button
+            class="nav-item"
+            data-page="snapshot-dashboard"
+            type="button"
+        >
+            <span>◉</span>
+            Snapshot Jobs
+        </button>
+ 
+        <button
+            class="nav-item"
+            data-page="revert-snapshot"
+            type="button"
+        >
+            <span>↶</span>
+            Revert Snapshot
+        </button>
+<!--
+        <button
+            class="nav-item"
+            data-page="revert-dashboard"
+            type="button"
+        >
+            <span>⏱</span>
+            Revert Jobs
+        </button>  -->
+   </nav>
+
+    <div class="sidebar-footer">
+        <span>AWS Snapshot Portal</span>
+        <small>Secure session credentials</small>
+    </div>
+
+</aside>
+
+
+<!-- =====================================================
+     MAIN CONTENT
+===================================================== -->
+
+<main class="main-content">
+
+    <!-- =================================================
+         TOPBAR
+    ================================================== -->
+
+    <header class="topbar">
+
+        <div class="page-heading">
+            <h1 id="page-title">Dashboard</h1>
+            <p>AWS infrastructure and snapshot management</p>
+        </div>
+
+        <div class="topbar-actions">
+
+            <div class="account-selector-wrapper">
+
+                <label for="account-select">
+                    AWS Account
+                </label>
+
+                <select id="account-select">
+                    <option value="">
+                        No account connected
+                    </option>
+                </select>
+
+            </div>
+
+            <div class="region-wrapper">
+
+                <label for="region">
+                    Region
+                </label>
+
+                <select id="region">
+                    <option value="us-east-1">us-east-1</option>
+                    <option value="us-east-2">us-east-2</option>
+                    <option value="us-west-1">us-west-1</option>
+                    <option value="us-west-2">us-west-2</option>
+                </select>
+
+            </div>
+
+            <button
+                id="open-credentials"
+                class="btn primary"
+                type="button"
+            >
+                Manage Accounts
+            </button>
+
+        </div>
+
+    </header>
+
+<!-- =================================================
+     CENTRALIZED MULTI-ACCOUNT DASHBOARD
+================================================== -->
+<section id="centralized-dashboard" class="page">
+
+    <div class="page-toolbar">
+        <div>
+            <h2>Global Multi-Account Dashboard</h2>
+            <p>Aggregated telemetry and health status across all connected AWS accounts.</p>
+        </div>
+        <div class="toolbar-actions">
+            <button id="refresh-centralized-dashboard" class="btn primary" type="button">
+                Refresh Global Data
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">EC2</div>
+            <div>
+                <span>Total Instances</span>
+                <strong id="cd-total-instances">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card purple">
+            <div class="stat-icon">EBS</div>
+            <div>
+                <span>Total Volumes</span>
+                <strong id="cd-total-volumes">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card orange">
+            <div class="stat-icon">SNP</div>
+            <div>
+                <span>Total Snapshots</span>
+                <strong id="cd-total-snapshots">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card green">
+            <div class="stat-icon">GB</div>
+            <div>
+                <span>Total Storage Capacity</span>
+                <strong id="cd-total-storage">0 GB</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card" style="margin-top: 24px;">
+        <div class="card-header">
+            <div>
+                <h3>Connected Accounts Telemetry</h3>
+                <p>Real-time resource breakdown per account and region</p>
+            </div>
+        </div>
+
+        <div id="centralized-accounts-table" class="table-container">
+            <div class="empty-state">
+                Loading multi-account data...
+            </div>
+        </div>
+    </div>
+
+</section>
+    <!-- =================================================
+         DASHBOARD
+    ================================================== -->
+
+    <section id="dashboard" class="page active">
+
+        <div class="selected-account-banner">
+
+           <div>
+                <span class="banner-label">
+                    Selected AWS Account
+                </span>
+
+                <strong id="dashboard-selected-account">
+                    No account selected
+                </strong>
+            </div>
+
+            <div>
+                <span class="banner-label">
+                    Region
+                </span>
+
+                <strong id="dashboard-selected-region">
+                    -
+                </strong>
+            </div>
+
+            <div
+                id="connection-status"
+                class="connection-status"
+            >
+                Not connected
+            </div>
+
+        </div>
+
+        <div class="page-toolbar">
+
+            <div>
+                <h2>Account Overview</h2>
+
+                <p id="dashboard-message">
+                    Add an AWS account to get started.
+                </p>
+            </div>
+
+            <div class="toolbar-actions">
+
+                <button
+                    id="refresh-dashboard"
+                    class="btn secondary"
+                    type="button"
+                >
+                    Refresh
+                </button>
+
+                <button
+                    id="dashboard-add-account"
+                    class="btn primary"
+                    type="button"
+                >
+                    + Add Account
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="stats-grid">
+
+            <div class="stat-card blue">
+                <div class="stat-icon">EC2</div>
+
+                <div>
+                    <span>Instances</span>
+                    <strong id="instance-count">-</strong>
+                </div>
+            </div>
+
+            <div class="stat-card purple">
+                <div class="stat-icon">EBS</div>
+
+                <div>
+                    <span>Volumes</span>
+                    <strong id="volume-count">-</strong>
+                </div>
+            </div>
+
+            <div class="stat-card orange">
+                <div class="stat-icon">GB</div>
+
+                <div>
+                    <span>Total Volume Storage</span>
+                    <strong id="volume-total-storage">-</strong>
+                </div>
+            </div>
+
+            <div class="stat-card green">
+                <div class="stat-icon">SNP</div>
+
+                <div>
+                    <span>Snapshots</span>
+                    <strong id="snapshot-count">-</strong>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="dashboard-grid">
+
+            <div class="content-card">
+
+                <div class="card-header">
+                    <div>
+                        <h3>Selected Account</h3>
+                        <p>Current AWS connection</p>
+                    </div>
+                </div>
+
+                <div class="account-summary">
+
+                    <div class="summary-item">
+                        <span>Account</span>
+                        <strong id="summary-account-name">-</strong>
+                    </div>
+
+                    <div class="summary-item">
+                        <span>Region</span>
+                        <strong id="summary-region">-</strong>
+                    </div>
+
+                    <div class="summary-item">
+                        <span>Status</span>
+                        <strong id="summary-account-status">
+                            Not connected
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="content-card">
+
+                <div class="card-header">
+                    <div>
+                        <h3>Storage Summary</h3>
+                        <p>Total attached EBS capacity</p>
+                    </div>
+                </div>
+
+                <div class="storage-summary">
+
+                    <div class="storage-number">
+                        <strong id="dashboard-storage-number">
+                            0
+                        </strong>
+
+                        <span>GB</span>
+                    </div>
+
+                    <div class="storage-info">
+
+                        <span>
+                            Total EBS volume capacity
+                        </span>
+
+                        <small id="dashboard-storage-readable">
+                            0 GB
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =================================================
+         INSTANCES
+    ================================================== -->
+
+    <section id="instances" class="page">
+
+        <div class="page-toolbar">
+
+            <div>
+                <h2>EC2 Instances</h2>
+
+                <p>
+                    Instances in the selected AWS account and region.
+                </p>
+            </div>
+
+            <button
+                id="fetch-instances"
+                class="btn primary"
+                type="button"
+            >
+                Refresh Instances
+            </button>
+
+        </div>
+
+        <div class="filter-bar">
+
+            <input
+                id="instance-search"
+                type="search"
+                placeholder="Search by name, instance ID, state, IP..."
+            >
+
+            <span
+                id="instance-result-count"
+                class="result-count"
+            >
+                0 results
+            </span>
+
+        </div>
+
+        <div
+            id="instances-table"
+            class="table-container"
+        >
+            <div class="empty-state">
+                Load instances to view EC2 resources.
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- =================================================
+         VOLUMES
+    ================================================== -->
+
+    <section id="volumes" class="page">
+
+        <div class="page-toolbar">
+
+            <div>
+                <h2>EBS Volumes</h2>
+
+                <p>
+                    EBS volumes for the selected account and region.
+                </p>
+            </div>
+
+            <button
+                id="fetch-volumes"
+                class="btn primary"
+                type="button"
+            >
+                Refresh Volumes
+            </button>
+
+        </div>
+
+        <div class="volume-summary-grid">
+
+            <div class="mini-stat">
+                <span>Total Volumes</span>
+                <strong id="volumes-page-count">0</strong>
+            </div>
+
+            <div class="mini-stat">
+                <span>Total Storage</span>
+                <strong id="volumes-page-total">0 GB</strong>
+            </div>
+
+            <div class="mini-stat">
+                <span>Encrypted</span>
+                <strong id="volumes-page-encrypted">0</strong>
+            </div>
+
+        </div>
+
+        <div
+            id="volumes-table"
+            class="table-container"
+        >
+            <div class="empty-state">
+                Load volumes to view EBS resources.
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- =================================================
+         SNAPSHOTS
+    ================================================== -->
+
+    <section id="snapshots" class="page">
+
+        <div class="page-toolbar">
+
+            <div>
+                <h2>Snapshots</h2>
+
+                <p>
+                    AWS EBS snapshots for the selected account.
+                </p>
+            </div>
+
+            <button
+                id="fetch-snapshots"
+                class="btn primary"
+                type="button"
+            >
+                Refresh Snapshots
+            </button>
+
+        </div>
+
+        <div class="filter-bar">
+
+            <input
+                id="snapshot-search"
+                type="search"
+                placeholder="Search snapshots..."
+            >
+
+            <span
+                id="snapshot-result-count"
+                class="result-count"
+            >
+                0 results
+            </span>
+
+        </div>
+
+        <div
+            id="snapshots-table"
+            class="table-container"
+        >
+            <div class="empty-state">
+                Load snapshots to view snapshot resources.
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- =================================================
+         CREATE SNAPSHOT
+    ================================================== -->
+
+    <section id="create-snapshot" class="page">
+
+        <div class="page-toolbar">
+
+            <div>
+                <h2>Create Snapshot</h2>
+
+                <p>
+                    Create snapshots for one or more EC2 instances.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="form-card">
+
+            <div class="form-grid">
+
+                <div class="form-group full">
+
+                    <label for="snapshot-instances">
+                        Instance Names / IDs
+                    </label>
+
+                    <textarea
+                        id="snapshot-instances"
+                        rows="7"
+                        placeholder="Enter one instance name or ID per line"
+                    ></textarea>
+
+                    <small id="snapshot-instance-hint">
+                        Loading available instances...
+                    </small>
+
+                </div>
+
+                <div class="form-group full">
+
+                    <label for="snapshot-description">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="snapshot-description"
+                        rows="3"
+                        placeholder="Optional snapshot description"
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+            <div
+                id="snapshot-instance-preview"
+                class="preview-area"
+            >
+                <div class="muted">
+                    Enter instances to preview them.
+                </div>
+            </div>
+
+            <div class="form-actions">
+
+                <button
+                    id="create-snapshots"
+                    class="btn primary"
+                    type="button"
+                >
+                    Create Snapshots
+                </button>
+
+            </div>
+
+        </div>
+
+        <div id="snapshot-result"></div>
+
+    </section>
+
+
+<!-- =================================================
+     SNAPSHOT DASHBOARD
+================================================== -->
+<section id="snapshot-dashboard" class="page">
+
+    <div class="page-toolbar">
+        <div>
+            <h2>Snapshot Jobs</h2>
+            <p>Monitor real-time replication status and multi-account sync progress.</p>
+        </div>
+
+        <div class="toolbar-actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <!-- Auto-refresh Toggle Switch -->
+            <div style="display: flex; align-items: center; gap: 6px; background: rgba(30, 41, 59, 0.5); padding: 6px 12px; border-radius: 8px; border: 1px solid #334155;">
+                <input type="checkbox" id="auto-refresh-toggle" checked style="cursor: pointer; width: 16px; height: 16px;">
+                <label for="auto-refresh-toggle" style="font-size: 11px; font-weight: 600; cursor: pointer; color: #f8fafc;">Auto-Refresh (15s)</label>
+                <span id="refresh-countdown-badge" style="font-size: 10px; font-family: monospace; color: #38bdf8; margin-left: 4px;">15s</span>
+            </div>
+
+            <!-- Refresh Button -->
+            <button id="refresh-snapshot-dashboard" class="btn primary" type="button" style="display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-rotate" id="refresh-icon"></i> Refresh Now
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">JOB</div>
+            <div>
+                <span>Total Jobs</span>
+                <strong id="sd-total-jobs">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card orange">
+            <div class="stat-icon">RUN</div>
+            <div>
+                <span>Running</span>
+                <strong id="sd-running-jobs">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card purple">
+            <div class="stat-icon">SNP</div>
+            <div>
+                <span>Total Snapshots</span>
+                <strong id="sd-total-snapshots">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card green">
+            <div class="stat-icon">OK</div>
+            <div>
+                <span>Completed</span>
+                <strong id="sd-completed-snapshots">0</strong>
+            </div>
+        </div>
+
+        <div class="stat-card red">
+            <div class="stat-icon">ERR</div>
+            <div>
+                <span>Failed</span>
+                <strong id="sd-failed-snapshots">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div id="snapshot-jobs-table" class="table-container"></div>
+
+</section> 
+<!-- =================================================
+     REVERT SNAPSHOT (VERTICAL STEP-TAB WORKFLOW)
+================================================== -->
+<section id="revert-snapshot" class="page">
+
+    <div class="page-toolbar">
+        <div>
+            <h2>Revert Instance Snapshot</h2>
+            <p>Guided step-by-step wizard to restore instance EBS volumes from target snapshots.</p>
+        </div>
+        <div class="toolbar-actions">
+            <button id="refresh-revert-data" class="btn secondary" type="button">
+                <i class="fa-solid fa-rotate"></i> Refresh Resources
+            </button>
+        </div>
+    </div>
+
+    <!-- ACTIVE SESSION CONTEXT BANNER -->
+    <div class="selected-account-banner" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 10px; padding: 16px 20px;">
+        <div>
+            <span style="font-size: 11px; text-transform: uppercase; color: #94a3b8;">Bound AWS Account Session</span>
+            <strong id="revert-session-account" style="display: block; font-size: 15px; color: #f8fafc; margin-top: 2px;">No active account session</strong>
+        </div>
+        <div>
+            <span style="font-size: 11px; text-transform: uppercase; color: #94a3b8;">Target Region</span>
+            <strong id="revert-session-region" style="display: block; font-size: 15px; color: #38bdf8; margin-top: 2px;">-</strong>
+        </div>
+        <div class="connection-status connected" style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+            Session Active
+        </div>
+    </div>
+
+    <!-- VERTICAL STEP-TAB LAYOUT CONTAINER -->
+    <div class="revert-vtab-container" style="display: grid; grid-template-columns: 260px 1fr; gap: 20px; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 12px; overflow: hidden; padding: 16px;">
+        
+        <!-- VERTICAL STEP TAB NAVIGATION SIDEBAR -->
+        <div class="vtab-sidebar" style="display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #334155; padding-right: 16px;">
+            <button type="button" class="vtab-step-btn active" data-vtab="step-1-instance" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(30, 41, 59, 0.8); border: 1px solid #38bdf8; border-radius: 8px; color: #fff; text-align: left; cursor: pointer;">
+                <span style="width: 28px; height: 28px; border-radius: 50%; background: #38bdf8; color: #0f172a; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 12px;">1</span>
+                <div>
+                    <strong style="display: block; font-size: 13px;">Target Instance</strong>
+                    <small style="font-size: 11px; color: #94a3b8;">Select EC2 Server</small>
+                </div>
+            </button>
+
+            <button type="button" class="vtab-step-btn" data-vtab="step-2-volume" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(15, 23, 42, 0.4); border: 1px solid #334155; border-radius: 8px; color: #94a3b8; text-align: left; cursor: pointer;">
+                <span style="width: 28px; height: 28px; border-radius: 50%; background: #334155; color: #fff; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 12px;">2</span>
+                <div>
+                    <strong style="display: block; font-size: 13px;">Attached Volumes</strong>
+                    <small style="font-size: 11px; color: #64748b;">Choose EBS Volume</small>
+                </div>
+            </button>
+
+            <button type="button" class="vtab-step-btn" data-vtab="step-3-snapshot" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(15, 23, 42, 0.4); border: 1px solid #334155; border-radius: 8px; color: #94a3b8; text-align: left; cursor: pointer;">
+                <span style="width: 28px; height: 28px; border-radius: 50%; background: #334155; color: #fff; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 12px;">3</span>
+                <div>
+                    <strong style="display: block; font-size: 13px;">Map Snapshot</strong>
+                    <small style="font-size: 11px; color: #64748b;">Select Recovery Point</small>
+                </div>
+            </button>
+
+            <button type="button" class="vtab-step-btn" data-vtab="step-4-queue" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(15, 23, 42, 0.4); border: 1px solid #334155; border-radius: 8px; color: #94a3b8; text-align: left; cursor: pointer;">
+                <span style="width: 28px; height: 28px; border-radius: 50%; background: #334155; color: #fff; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 12px;">4</span>
+                <div>
+                    <strong style="display: block; font-size: 13px;">Queue & Restore</strong>
+                    <small style="font-size: 11px; color: #64748b;">Execute Reversion</small>
+                </div>
+            </button>
+        </div>
+
+        <!-- VERTICAL TAB PANELS -->
+        <div class="vtab-panels-content" style="padding: 8px;">
+
+            <!-- STEP 1 PANEL: INSTANCE -->
+            <div id="step-1-instance" class="vtab-panel" style="display: block;">
+                <h3 style="margin-bottom: 8px; font-size: 16px; color: #fff;">Step 1: Choose Target Instance</h3>
+                <p style="color: #94a3b8; font-size: 12px; margin-bottom: 16px;">Select the EC2 instance you wish to perform a volume reversion on.</p>
+
+                <div class="form-group">
+                    <label for="restore-instance-select" style="font-size: 12px; color: #cbd5e1;">EC2 Instance:</label>
+                    <select id="restore-instance-select" class="form-control" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px;">
+                        <option value="">Select an instance...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- STEP 2 PANEL: VOLUME -->
+            <div id="step-2-volume" class="vtab-panel" style="display: none;">
+                <h3 style="margin-bottom: 8px; font-size: 16px; color: #fff;">Step 2: Select Volume to Revert</h3>
+                <p style="color: #94a3b8; font-size: 12px; margin-bottom: 16px;">Pick the target attached EBS volume(s) that will be detached and replaced.</p>
+
+                <div class="form-group">
+                    <label for="restore-volume-select" style="font-size: 12px; color: #cbd5e1;">Attached Volumes:</label>
+                    <select id="restore-volume-select" multiple class="form-control" style="width: 100%; height: 140px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px;" disabled>
+                        <option value="">Select an instance first</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- STEP 3 PANEL: SNAPSHOT -->
+            <div id="step-3-snapshot" class="vtab-panel" style="display: none;">
+                <h3 style="margin-bottom: 8px; font-size: 16px; color: #fff;">Step 3: Map Target Backup Snapshot</h3>
+                <p style="color: #94a3b8; font-size: 12px; margin-bottom: 16px;">Select the restore point snapshot available for the chosen volume.</p>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="restore-snapshot-select" style="font-size: 12px; color: #cbd5e1;">Target Snapshots:</label>
+                    <select id="restore-snapshot-select" class="form-control" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px;" disabled>
+                        <option value="">Select volume(s) first</option>
+                    </select>
+                </div>
+
+                <button type="button" id="add-to-queue-btn" class="btn secondary" disabled style="width: 100%;">
+                    <i class="fa-solid fa-plus"></i> Add Mapping to Queue
+                </button>
+            </div>
+
+            <!-- STEP 4 PANEL: QUEUE & RESTORE -->
+            <div id="step-4-queue" class="vtab-panel" style="display: none;">
+                <h3 style="margin-bottom: 8px; font-size: 16px; color: #fff;">Step 4: Confirm & Execute Reversion Pipeline</h3>
+                <p style="color: #94a3b8; font-size: 12px; margin-bottom: 16px;">Review all queued volume restoration tasks before executing the parallel job.</p>
+
+                <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid #334155; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <h4 style="margin: 0; color: #fff; font-size: 13px;">Queued Restoration Tasks</h4>
+                        <span id="queue-counter-badge" style="background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold;">0 tasks</span>
+                    </div>
+                    <div id="restore-queue-list" style="max-height: 140px; overflow-y: auto;">
+                        <p id="queue-empty-text" style="color: #888; font-size: 12px; text-align: center; margin: 10px 0;">No restore tasks added to queue yet.</p>
+                    </div>
+                </div>
+
+                <button type="button" id="restore-snapshot-button" class="btn primary" disabled style="width: 100%;">
+                    Execute Parallel Reversion Pipeline
+                </button>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- =================================================
+     REVERT JOBS DASHBOARD
+================================================== -->
+<!-- ... existing code ... -->
+<!-- =====================================================
+     APPLICATION JAVASCRIPT
+===================================================== -->
+
+<script src="js/app.js"></script>
+<script src="js/revert-snapshot.js"></script>
+<script>
+    // Vertical Step-Tab Controller Script
+    document.addEventListener("DOMContentLoaded", () => {
+        const stepButtons = document.querySelectorAll(".vtab-step-btn");
+        const panels = document.querySelectorAll(".vtab-panel");
+
+        stepButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const targetTab = btn.getAttribute("data-vtab");
+
+                stepButtons.forEach(b => {
+                    b.classList.remove("active");
+                    b.style.background = "rgba(15, 23, 42, 0.4)";
+                    b.style.borderColor = "#334155";
+                    b.style.color = "#94a3b8";
+                    const numSpan = b.querySelector("span");
+                    if (numSpan) {
+                        numSpan.style.background = "#334155";
+                        numSpan.style.color = "#fff";
+                    }
+                });
+
+                btn.classList.add("active");
+                btn.style.background = "rgba(30, 41, 59, 0.8)";
+                btn.style.borderColor = "#38bdf8";
+                btn.style.color = "#fff";
+                const activeNumSpan = btn.querySelector("span");
+                if (activeNumSpan) {
+                    activeNumSpan.style.background = "#38bdf8";
+                    activeNumSpan.style.color = "#0f172a";
+                }
+
+                panels.forEach(p => p.style.display = "none");
+                const targetPanel = document.getElementById(targetTab);
+                if (targetPanel) {
+                    targetPanel.style.display = "block";
+                }
+            });
+        });
+    });
+</script>
+<script type="module">
+    import * as EC2Module from "https://cdn.jsdelivr.net/npm/@aws-sdk/client-ec2/+esm";
+    window.EC2Client = EC2Module.EC2Client;
+    window.DescribeInstancesCommand = EC2Module.DescribeInstancesCommand;
+    window.DescribeVolumesCommand = EC2Module.DescribeVolumesCommand;
+    window.DescribeSnapshotsCommand = EC2Module.DescribeSnapshotsCommand;
+    window.StopInstancesCommand = EC2Module.StopInstancesCommand;
+    window.StartInstancesCommand = EC2Module.StartInstancesCommand;
+    window.DetachVolumeCommand = EC2Module.DetachVolumeCommand;
+    window.AttachVolumeCommand = EC2Module.AttachVolumeCommand;
+    window.CreateVolumeCommand = EC2Module.CreateVolumeCommand;
+</script>
+<!-- =================================================
+     REVERT JOBS DASHBOARD
+================================================== -->
+<section id="revert-dashboard" class="page">
+
+    <div class="page-toolbar">
+        <div>
+            <h2>Revert & Restoration Jobs</h2>
+            <p>Monitor active and historical volume restoration tasks in real-time.</p>
+        </div>
+        <div class="toolbar-actions" style="display: flex; align-items: center; gap: 12px;">
+            <button id="refresh-revert-dashboard" class="btn primary" type="button">
+                <i class="fa-solid fa-rotate"></i> Refresh Jobs
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="margin-bottom: 24px;">
+        <div class="stat-card blue">
+            <div class="stat-icon">REV</div>
+            <div>
+                <span>Total Reverts</span>
+                <strong id="rd-total-jobs">0</strong>
+            </div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-icon">RUN</div>
+            <div>
+                <span>Restoring</span>
+                <strong id="rd-running-jobs">0</strong>
+            </div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">OK</div>
+            <div>
+                <span>Completed</span>
+                <strong id="rd-completed-jobs">0</strong>
+            </div>
+        </div>
+        <div class="stat-card red">
+            <div class="stat-icon">ERR</div>
+            <div>
+                <span>Failed</span>
+                <strong id="rd-failed-jobs">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <div class="card-header" style="margin-bottom: 16px;">
+            <h3>Active Restoration Pipeline</h3>
+            <p>Live tracking of volume replacement and instance state recovery</p>
+        </div>
+        <div id="revert-jobs-table" class="table-container">
+            <div class="empty-state">Loading revert jobs telemetry...</div>
+        </div>
+    </div>
+
+</section>
+<!-- =================================================
+         ACCOUNT MODAL
+    ================================================== -->
+
+    <div
+        id="credential-modal"
+        class="modal-overlay"
+    >
+
+        <div class="modal account-modal">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>AWS Accounts</h2>
+                    <p>Add, edit or switch AWS accounts.</p>
+                </div>
+
+                <button
+                    id="close-credentials"
+                    class="modal-close"
+                    type="button"
+                    aria-label="Close"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <div class="account-list-header">
+                <strong>Existing Accounts</strong>
+            </div>
+
+            <div
+                id="account-list"
+                class="account-list"
+            ></div>
+
+            <div class="divider"></div>
+
+            <div class="modal-form">
+
+                <h3>Add / Update Account</h3>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label for="account-name">
+                            Account Name
+                        </label>
+
+                        <input
+                            id="account-name"
+                            type="text"
+                            placeholder="Production"
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="account-region">
+                            Region
+                        </label>
+
+                        <select id="account-region">
+
+                            <option value="us-east-2">us-east-2</option>
+                            <option value="us-west-1">us-west-1</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group full">
+
+                        <label for="access-key">
+                            AWS Access Key ID
+                        </label>
+
+                        <input
+                            id="access-key"
+                            type="text"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+       <div class="form-group full">
+
+                        <label for="secret-key">
+                            AWS Secret Access Key
+                        </label>
+
+                        <input
+                            id="secret-key"
+                            type="password"
+                            autocomplete="new-password"
+                        >
+
+                    </div>
+
+                    <div class="form-group full">
+
+                        <label for="session-token">
+                            Session Token
+                            <span class="optional">
+                                Optional
+                            </span>
+                        </label>
+
+                        <textarea
+                            id="session-token"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+         
+	</div>
+
+                <div class="modal-actions">
+
+                    <button
+                        id="account-cancel"
+                        class="btn secondary"
+                        type="button"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        id="account-add"
+                        class="btn primary"
+                        type="button"
+                    >
+                        Add Account
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         JOB DETAILS MODAL
+    ================================================== -->
+
+    <div
+        id="job-details-modal"
+        class="modal-overlay"
+    >
+
+        <div class="modal job-modal">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>Snapshot Job Details</h2>
+                </div>
+
+                <button
+                    id="close-job-details"
+                    class="modal-close"
+                    type="button"
+                    aria-label="Close"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <div id="job-details-content"></div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<!-- =====================================================
+     SESSION EXPIRED / RE-AUTHENTICATION MODAL
+===================================================== -->
+<div id="session-expired-modal" class="modal-overlay">
+    <div class="modal" style="max-width: 480px; text-align: center; padding: 24px;">
+        <div style="font-size: 42px; color: var(--danger, #f87171); margin-bottom: 12px;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h2 style="margin: 0 0 8px; color: #ffffff; font-size: 20px;">AWS Session Expired</h2>
+        <p style="color: var(--muted, #94a3b8); font-size: 13px; margin-bottom: 20px;">
+            Your AWS security token or access credentials have expired or are unauthorized. Please update your session credentials to continue.
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button type="button" id="session-expired-reauth-btn" class="btn primary" style="width: 100%;">
+                Update Credentials Now
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================
+     APPLICATION JAVASCRIPT
+===================================================== -->
+
+<script src="js/app.js"></script>
+<script src="js/revert-snapshot.js"></script>
+<script type="module">
+    import * as EC2Module from "https://cdn.jsdelivr.net/npm/@aws-sdk/client-ec2/+esm";
+    window.EC2Client = EC2Module.EC2Client;
+    window.DescribeInstancesCommand = EC2Module.DescribeInstancesCommand;
+    window.DescribeVolumesCommand = EC2Module.DescribeVolumesCommand;
+    window.DescribeSnapshotsCommand = EC2Module.DescribeSnapshotsCommand;
+    window.StopInstancesCommand = EC2Module.StopInstancesCommand;
+    window.StartInstancesCommand = EC2Module.StartInstancesCommand;
+    window.DetachVolumeCommand = EC2Module.DetachVolumeCommand;
+    window.AttachVolumeCommand = EC2Module.AttachVolumeCommand;
+    window.CreateVolumeCommand = EC2Module.CreateVolumeCommand;
+</script>
+</body>
+</html>
+

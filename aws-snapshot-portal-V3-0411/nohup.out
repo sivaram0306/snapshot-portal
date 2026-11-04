@@ -1,0 +1,519 @@
+◇ injected env (10) from .env // tip: ⌘ override existing { override: true }
+MySQL database initialized.
+Snapshot timeout: 24 hours
+Snapshot poll interval: 60000 ms
+AWS Snapshot Portal running on port 3001
+http://127.0.0.1:3001
+Get instances error: AuthFailure: AWS was not able to validate the provided access credentials
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 401,
+    requestId: '1cb8a658-6d1a-4dad-a915-2835546d546f',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'AuthFailure',
+  Error: {
+    Type: undefined,
+    Code: 'AuthFailure',
+    Message: 'AWS was not able to validate the provided access credentials'
+  }
+}
+Get snapshots error: AuthFailure: AWS was not able to validate the provided access credentials
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 401,
+    requestId: 'd9535155-90be-4f29-bbfb-ea16f6ceadab',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'AuthFailure',
+  Error: {
+    Type: undefined,
+    Code: 'AuthFailure',
+    Message: 'AWS was not able to validate the provided access credentials'
+  }
+}
+Get volumes error: AuthFailure: AWS was not able to validate the provided access credentials
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 401,
+    requestId: 'bfbb283a-b7ae-4b1a-8269-aa47130d3f8f',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'AuthFailure',
+  Error: {
+    Type: undefined,
+    Code: 'AuthFailure',
+    Message: 'AWS was not able to validate the provided access credentials'
+  }
+}
+Get instances error: AuthFailure: AWS was not able to validate the provided access credentials
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 401,
+    requestId: '1ced1037-6563-4255-9a82-97c9c9af749e',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'AuthFailure',
+  Error: {
+    Type: undefined,
+    Code: 'AuthFailure',
+    Message: 'AWS was not able to validate the provided access credentials'
+  }
+}
+Get volumes error: AuthFailure: AWS was not able to validate the provided access credentials
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 401,
+    requestId: '679cd8b7-991d-496d-a39d-146c1564b62a',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'AuthFailure',
+  Error: {
+    Type: undefined,
+    Code: 'AuthFailure',
+    Message: 'AWS was not able to validate the provided access credentials'
+  }
+}
+Get snapshots error: AuthFailure: AWS was not able to validate the provided access credentials
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 401,
+    requestId: 'c8381b0a-6478-4278-8213-e92701518837',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'AuthFailure',
+  Error: {
+    Type: undefined,
+    Code: 'AuthFailure',
+    Message: 'AWS was not able to validate the provided access credentials'
+  }
+}
+Get instances error: AuthFailure: AWS was not able to validate the provided access credentials
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 401,
+    requestId: '45a07b05-01b6-4a14-85b4-08a6215b3815',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'AuthFailure',
+  Error: {
+    Type: undefined,
+    Code: 'AuthFailure',
+    Message: 'AWS was not able to validate the provided access credentials'
+  }
+}
+Get instances error: AuthFailure: AWS was not able to validate the provided access credentials
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 401,
+    requestId: 'f665a054-5176-445a-8b2d-022d50754c39',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'AuthFailure',
+  Error: {
+    Type: undefined,
+    Code: 'AuthFailure',
+    Message: 'AWS was not able to validate the provided access credentials'
+  }
+}
+Get volumes error: AuthFailure: AWS was not able to validate the provided access credentials
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 401,
+    requestId: '8efe3f41-0622-4e28-b0b0-ea0ba4b76ebe',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'AuthFailure',
+  Error: {
+    Type: undefined,
+    Code: 'AuthFailure',
+    Message: 'AWS was not able to validate the provided access credentials'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'b5f658e8-b3a5-40a4-ab8b-b0812717e02f',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '474fe039-1c59-4802-b7e4-3fca8190c160',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '75322766-c349-4022-85d1-ee72975f18d7',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '3075a0ac-fe05-4881-99fd-34259984e306',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'c80a9999-0a8d-4ab9-98de-e45f96324998',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'ec37f8c6-7824-4da3-857a-4aa1654f5d79',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '66f75996-259a-4caf-a442-a71142121b66',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'd9579631-e3ca-41f0-80bb-351610e9786b',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'f4f25639-b655-421e-a444-6d9dd7618d18',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'ce740833-b639-4de4-b77f-b195759af472',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}

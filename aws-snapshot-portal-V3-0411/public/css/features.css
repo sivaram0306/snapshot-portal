@@ -1,0 +1,133 @@
+/* =========================================================
+   features.css
+   Styles for feature-extensions.js. Load after style.css.
+========================================================= */
+
+/* ---------- Cost card ---------- */
+.cost-card {
+    grid-column: 1 / -1;
+    flex-basis: 100%;
+}
+
+.cost-total {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 8px 0 14px;
+}
+
+.cost-total strong {
+    font-size: 30px;
+    line-height: 1.1;
+}
+
+.cost-total span,
+.cost-note {
+    color: var(--text-muted, #6b7280);
+    font-size: 12px;
+}
+
+.cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.cost-table th,
+.cost-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.cost-table th:not(:first-child),
+.cost-table td:not(:first-child) {
+    text-align: right;
+}
+
+.cost-snapshots {
+    margin-top: 12px;
+    font-size: 13px;
+}
+
+.cost-note {
+    display: block;
+    margin-top: 10px;
+    line-height: 1.45;
+}
+
+/* ---------- Age filter ---------- */
+.age-filter {
+    min-width: 170px;
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid var(--border-color, #d0d5dd);
+    border-radius: 8px;
+    background: var(--card-bg, #ffffff);
+    color: inherit;
+    font: inherit;
+}
+
+/* ---------- Activity feed ---------- */
+.activity-feed {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.activity-item:last-child {
+    border-bottom: 0;
+}
+
+.activity-dot {
+    width: 10px;
+    height: 10px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: #2563eb;
+    flex-shrink: 0;
+}
+
+.activity-item.success .activity-dot {
+    background: #12b76a;
+}
+
+.activity-item.error .activity-dot {
+    background: #f04438;
+}
+
+.activity-item.warning .activity-dot {
+    background: #f79009;
+}
+
+.activity-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-msg {
+    font-size: 14px;
+    word-break: break-word;
+}
+
+.activity-meta {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--text-muted, #6b7280);
+}
+
+.activity-type {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted, #6b7280);
+}
+
