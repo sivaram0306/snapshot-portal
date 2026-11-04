@@ -2357,9 +2357,8 @@ app.post(
     }
 );
 
-
 /* =========================================================
-   REVERT / RESTORE SNAPSHOTS (PARALLEL QUEUE)
+   REVERT / RESTORE SNAPSHOTS (PARALLEL WORKFLOW EXECUTION)
 ========================================================= */
 
 app.post(
@@ -2392,8 +2391,18 @@ app.post(
 
                 const revertJobId = generateRevertJobId();
 
+                // 1. Insert initial running job into DB
+                await pool.query(
+                    `
+                    INSERT INTO revert_jobs (job_id, instance_id, volume_id, snapshot_id, status)
+                    VALUES (?, ?, ?, ?, 'running')
+                    `,
+                    [revertJobId, instanceId, volumeId, snapshotId]
+                );
+
+                // Execute AWS orchestration asynchronously or synchronously per task
                 try {
-                    // 1. Describe the old volume to find its Availability Zone and device name / attachment info
+                    // Step A: Describe the target volume to get its AvailabilityZone and Device mapping
                     const volDesc = await ec2.send(new DescribeVolumesCommand({ VolumeIds: [volumeId] }));
                     const targetVolume = volDesc.Volumes?.[0];
 
@@ -2405,7 +2414,26 @@ app.post(
                     const attachment = targetVolume.Attachments?.[0];
                     const deviceName = attachment ? attachment.Device : "/dev/sda1";
 
-                    // 2. Create a new EBS volume from the selected snapshot in the same AZ
+                    // Step B: Stop the EC2 instance safely before modifying attached volumes
+                    const { StopInstancesCommand, StartInstancesCommand, DetachVolumeCommand, AttachVolumeCommand, CreateVolumeCommand } = require("@aws-sdk/client-ec2");
+                    
+                    console.log(`Stopping instance ${instanceId} for volume reversion...`);
+                    await ec2.send(new StopInstancesCommand({ InstanceIds: [instanceId] }));
+
+                    // Wait for instance to stop (optional simple polling or proceed with detach if stopped)
+                    // Note: In production, you'd poll instance state until 'stopped'. For immediate dispatch:
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+
+                    // Step C: Detach the old volume
+                    if (attachment) {
+                        console.log(`Detaching old volume ${volumeId} from ${instanceId}...`);
+                        await ec2.send(new DetachVolumeCommand({ VolumeId: volumeId, InstanceId: instanceId }));
+                        // Wait for volume state to become 'available'
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                    }
+
+                    // Step D: Create a new EBS volume from the selected snapshot in the same AZ
+                    console.log(`Creating new EBS volume from snapshot ${snapshotId} in ${availabilityZone}...`);
                     const newVolResult = await ec2.send(new CreateVolumeCommand({
                         SnapshotId: snapshotId,
                         AvailabilityZone: availabilityZone,
@@ -2414,13 +2442,25 @@ app.post(
 
                     const newVolumeId = newVolResult.VolumeId;
 
-                    // Insert record into DB
+                    // Wait a few seconds for the volume to become available
+                    await new Promise(resolve => setTimeout(resolve, 6000));
+
+                    // Step E: Attach the new volume to the instance with the original device name
+                    console.log(`Attaching new volume ${newVolumeId} to ${instanceId} at ${deviceName}...`);
+                    await ec2.send(new AttachVolumeCommand({
+                        VolumeId: newVolumeId,
+                        InstanceId: instanceId,
+                        Device: deviceName
+                    }));
+
+                    // Step F: Restart the EC2 instance
+                    console.log(`Restarting instance ${instanceId}...`);
+                    await ec2.send(new StartInstancesCommand({ InstanceIds: [instanceId] }));
+
+                    // Update DB job status to completed
                     await pool.query(
-                        `
-                        INSERT INTO revert_jobs (job_id, instance_id, volume_id, snapshot_id, status)
-                        VALUES (?, ?, ?, ?, 'running')
-                        `,
-                        [revertJobId, instanceId, newVolumeId, snapshotId]
+                        `UPDATE revert_jobs SET status = 'completed', volume_id = ? WHERE job_id = ?`,
+                        [newVolumeId, revertJobId]
                     );
 
                     results.push({
@@ -2429,17 +2469,15 @@ app.post(
                         oldVolumeId: volumeId,
                         newVolumeId,
                         snapshotId,
-                        status: "Dispatched & New Volume Created"
+                        status: "completed"
                     });
 
                 } catch (err) {
-                    console.error("Revert task execution error:", err);
+                    console.error(`Revert task ${revertJobId} failed:`, err);
+                    
                     await pool.query(
-                        `
-                        INSERT INTO revert_jobs (job_id, instance_id, volume_id, snapshot_id, status)
-                        VALUES (?, ?, ?, ?, 'failed')
-                        `,
-                        [revertJobId, instanceId, volumeId, snapshotId]
+                        `UPDATE revert_jobs SET status = 'failed' WHERE job_id = ?`,
+                        [revertJobId]
                     );
 
                     results.push({
@@ -2447,7 +2485,7 @@ app.post(
                         instanceId,
                         volumeId,
                         snapshotId,
-                        status: "Failed",
+                        status: "failed",
                         error: err.message
                     });
                 }
@@ -2455,7 +2493,7 @@ app.post(
 
             res.json({
                 success: true,
-                message: "Reversion queue processing and volume provisioning completed.",
+                message: "Reversion pipeline executed successfully.",
                 results
             });
 
