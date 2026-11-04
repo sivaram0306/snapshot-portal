@@ -2374,127 +2374,28 @@ app.post(
                 });
             }
 
-            const ec2 = createEc2Client(req.body);
-            const results = [];
+            const revertJobId = generateRevertJobId();
+            const firstTask = tasks[0];
 
-            for (const task of tasks) {
-                const { instanceId, volumeId, snapshotId } = task;
+            // Insert job into database as running
+            await pool.query(
+                `
+                INSERT INTO revert_jobs (job_id, instance_id, volume_id, snapshot_id, status)
+                VALUES (?, ?, ?, ?, 'running')
+                `,
+                [revertJobId, firstTask.instanceId, firstTask.volumeId, firstTask.snapshotId]
+            );
 
-                if (!instanceId || !volumeId || !snapshotId) {
-                    results.push({
-                        task,
-                        status: "Failed",
-                        error: "Missing instanceId, volumeId, or snapshotId."
-                    });
-                    continue;
-                }
-
-                const revertJobId = generateRevertJobId();
-
-                // 1. Insert initial running job into DB
-                await pool.query(
-                    `
-                    INSERT INTO revert_jobs (job_id, instance_id, volume_id, snapshot_id, status)
-                    VALUES (?, ?, ?, ?, 'running')
-                    `,
-                    [revertJobId, instanceId, volumeId, snapshotId]
-                );
-
-                // Execute AWS orchestration asynchronously or synchronously per task
-                try {
-                    // Step A: Describe the target volume to get its AvailabilityZone and Device mapping
-                    const volDesc = await ec2.send(new DescribeVolumesCommand({ VolumeIds: [volumeId] }));
-                    const targetVolume = volDesc.Volumes?.[0];
-
-                    if (!targetVolume) {
-                        throw new Error(`Original volume ${volumeId} not found.`);
-                    }
-
-                    const availabilityZone = targetVolume.AvailabilityZone;
-                    const attachment = targetVolume.Attachments?.[0];
-                    const deviceName = attachment ? attachment.Device : "/dev/sda1";
-
-                    // Step B: Stop the EC2 instance safely before modifying attached volumes
-                    const { StopInstancesCommand, StartInstancesCommand, DetachVolumeCommand, AttachVolumeCommand, CreateVolumeCommand } = require("@aws-sdk/client-ec2");
-                    
-                    console.log(`Stopping instance ${instanceId} for volume reversion...`);
-                    await ec2.send(new StopInstancesCommand({ InstanceIds: [instanceId] }));
-
-                    // Wait for instance to stop (optional simple polling or proceed with detach if stopped)
-                    // Note: In production, you'd poll instance state until 'stopped'. For immediate dispatch:
-                    await new Promise(resolve => setTimeout(resolve, 5000));
-
-                    // Step C: Detach the old volume
-                    if (attachment) {
-                        console.log(`Detaching old volume ${volumeId} from ${instanceId}...`);
-                        await ec2.send(new DetachVolumeCommand({ VolumeId: volumeId, InstanceId: instanceId }));
-                        // Wait for volume state to become 'available'
-                        await new Promise(resolve => setTimeout(resolve, 5000));
-                    }
-
-                    // Step D: Create a new EBS volume from the selected snapshot in the same AZ
-                    console.log(`Creating new EBS volume from snapshot ${snapshotId} in ${availabilityZone}...`);
-                    const newVolResult = await ec2.send(new CreateVolumeCommand({
-                        SnapshotId: snapshotId,
-                        AvailabilityZone: availabilityZone,
-                        VolumeType: targetVolume.VolumeType || "gp3"
-                    }));
-
-                    const newVolumeId = newVolResult.VolumeId;
-
-                    // Wait a few seconds for the volume to become available
-                    await new Promise(resolve => setTimeout(resolve, 6000));
-
-                    // Step E: Attach the new volume to the instance with the original device name
-                    console.log(`Attaching new volume ${newVolumeId} to ${instanceId} at ${deviceName}...`);
-                    await ec2.send(new AttachVolumeCommand({
-                        VolumeId: newVolumeId,
-                        InstanceId: instanceId,
-                        Device: deviceName
-                    }));
-
-                    // Step F: Restart the EC2 instance
-                    console.log(`Restarting instance ${instanceId}...`);
-                    await ec2.send(new StartInstancesCommand({ InstanceIds: [instanceId] }));
-
-                    // Update DB job status to completed
-                    await pool.query(
-                        `UPDATE revert_jobs SET status = 'completed', volume_id = ? WHERE job_id = ?`,
-                        [newVolumeId, revertJobId]
-                    );
-
-                    results.push({
-                        jobId: revertJobId,
-                        instanceId,
-                        oldVolumeId: volumeId,
-                        newVolumeId,
-                        snapshotId,
-                        status: "completed"
-                    });
-
-                } catch (err) {
-                    console.error(`Revert task ${revertJobId} failed:`, err);
-                    
-                    await pool.query(
-                        `UPDATE revert_jobs SET status = 'failed' WHERE job_id = ?`,
-                        [revertJobId]
-                    );
-
-                    results.push({
-                        jobId: revertJobId,
-                        instanceId,
-                        volumeId,
-                        snapshotId,
-                        status: "failed",
-                        error: err.message
-                    });
-                }
-            }
-
+            // Respond immediately to client so UI navigates smoothly without hanging
             res.json({
                 success: true,
-                message: "Reversion pipeline executed successfully.",
-                results
+                message: "Reversion pipeline dispatched successfully.",
+                jobId: revertJobId
+            });
+
+            // Execute AWS orchestration in background worker function
+            processRevertJobBackground(req.body, revertJobId, tasks).catch(err => {
+                console.error(`Background revert job ${revertJobId} failed:`, err);
             });
 
         } catch (error) {
@@ -2507,6 +2408,67 @@ app.post(
     }
 );
 
+async function processRevertJobBackground(body, revertJobId, tasks) {
+    const ec2 = createEc2Client(body);
+
+    for (const task of tasks) {
+        const { instanceId, volumeId, snapshotId } = task;
+        try {
+            const volDesc = await ec2.send(new DescribeVolumesCommand({ VolumeIds: [volumeId] }));
+            const targetVolume = volDesc.Volumes?.[0];
+            if (!targetVolume) throw new Error(`Volume ${volumeId} not found.`);
+
+            const availabilityZone = targetVolume.AvailabilityZone;
+            const attachment = targetVolume.Attachments?.[0];
+            const deviceName = attachment ? attachment.Device : "/dev/sda1";
+
+            // 1. Stop Instance
+            console.log(`Stopping instance ${instanceId}...`);
+            await ec2.send(new StopInstancesCommand({ InstanceIds: [instanceId] }));
+            await new Promise(r => setTimeout(r, 10000)); // buffer for stop state
+
+            // 2. Detach old volume
+            if (attachment) {
+                console.log(`Detaching volume ${volumeId}...`);
+                await ec2.send(new DetachVolumeCommand({ VolumeId: volumeId, InstanceId: instanceId }));
+                await new Promise(r => setTimeout(r, 8000));
+            }
+
+            // 3. Create volume from snapshot
+            console.log(`Creating volume from snapshot ${snapshotId}...`);
+            const newVol = await ec2.send(new CreateVolumeCommand({
+                SnapshotId: snapshotId,
+                AvailabilityZone: availabilityZone,
+                VolumeType: targetVolume.VolumeType || "gp3"
+            }));
+            const newVolumeId = newVol.VolumeId;
+            await new Promise(r => setTimeout(r, 8000));
+
+            // 4. Attach new volume
+            console.log(`Attaching new volume ${newVolumeId} to ${instanceId}...`);
+            await ec2.send(new AttachVolumeCommand({
+                VolumeId: newVolumeId,
+                InstanceId: instanceId,
+                Device: deviceName
+            }));
+
+            // 5. Start instance
+            console.log(`Starting instance ${instanceId}...`);
+            await ec2.send(new StartInstancesCommand({ InstanceIds: [instanceId] }));
+
+            await pool.query(
+                `UPDATE revert_jobs SET status = 'completed', volume_id = ? WHERE job_id = ?`,
+                [newVolumeId, revertJobId]
+            );
+        } catch (err) {
+            console.error(`Task error for instance ${instanceId}:`, err);
+            await pool.query(
+                `UPDATE revert_jobs SET status = 'failed' WHERE job_id = ?`,
+                [revertJobId]
+            );
+        }
+    }
+}
 /* =========================================================
    REVERT DASHBOARD JOBS ENDPOINT
 ========================================================= */

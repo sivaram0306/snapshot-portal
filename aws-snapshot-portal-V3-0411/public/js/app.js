@@ -2169,7 +2169,75 @@ function renderRevertInstanceDropdown(instances) {
         `).join("");
     select.disabled = false;
 }
+function formatRevertStage(status) {
+    const stages = {
+        "stopping_instance": "Stopping Instance",
+        "creating_volume_from_snapshot": "Creating Volume from Snapshot",
+        "detaching_volume": "Detaching Old Volume",
+        "attaching_volume": "Attaching New Volume",
+        "starting_instance": "Starting Instance",
+        "running": "Processing Pipeline",
+        "completed": "Completed",
+        "failed": "Failed"
+    };
+    return stages[status] || status || "Pending";
+}
 
+function getRevertStatusBadgeClass(status) {
+    if (status === "completed") return "status completed";
+    if (status === "failed") return "status error";
+    return "status running"; // Uses your portal's active spinner/pulse styling
+}
+
+function renderRevertDashboardData(data) {
+    const summary = data.summary || {};
+    if (document.getElementById("rd-total-jobs")) document.getElementById("rd-total-jobs").textContent = summary.total || 0;
+    if (document.getElementById("rd-running-jobs")) document.getElementById("rd-running-jobs").textContent = summary.running || 0;
+    if (document.getElementById("rd-completed-jobs")) document.getElementById("rd-completed-jobs").textContent = summary.completed || 0;
+    if (document.getElementById("rd-failed-jobs")) document.getElementById("rd-failed-jobs").textContent = summary.failed || 0;
+
+    const container = document.getElementById("revert-jobs-table");
+    if (!container) return;
+
+    const jobs = Array.isArray(data.jobs) ? data.jobs : [];
+    if (!jobs.length) {
+        container.innerHTML = `<div class="empty-state">No active or historical revert tasks found.</div>`;
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Job ID</th>
+                        <th>Instance</th>
+                        <th>Volume</th>
+                        <th>Snapshot</th>
+                        <th>Current Stage</th>
+                        <th>Started At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${jobs.map(job => `
+                        <tr>
+                            <td><code>${escapeHtml(job.job_id || "-")}</code></td>
+                            <td>${escapeHtml(job.instance_id || "-")}</td>
+                            <td><code>${escapeHtml(job.volume_id || "-")}</code></td>
+                            <td><code>${escapeHtml(job.snapshot_id || "-")}</code></td>
+                            <td>
+                                <span class="${getRevertStatusBadgeClass(job.status)}">
+                                    ${escapeHtml(formatRevertStage(job.status))}
+                                </span>
+                            </td>
+                            <td>${formatDate(job.started_at)}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
 async function loadRevertDashboard() {
     try {
         const data = await api("/api/revert-dashboard").catch(() => ({ success: true, jobs: [], summary: {} }));
