@@ -517,3 +517,2140 @@ Get snapshots error: RequestExpired: Request has expired.
     Message: 'Request has expired.'
   }
 }
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'd5a541f0-61e9-4748-83d0-14f4cb666bfd',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '6d5ca98b-c285-4b18-8615-56e1256e00ee',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '14987583-8416-4b9c-8247-c0fa152450df',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '19ed4d7c-7714-4a76-b523-c41ecf9791e2',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'c869d000-1901-4dcc-b4d5-449d8a8d79cf',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '049d7b24-deb1-4545-bad3-f5cd629d147f',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '7e4451b0-3a97-4445-b90a-373f89e49424',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '8ac54c57-b348-4432-8f1d-abf743166134',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '4d508f44-4a6f-4744-a50e-f8c38adddb97',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '14b1c4f2-3f6b-4414-b498-1a39ac7fffee',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '07d8031e-2e5e-4803-9d95-85fb9ffaf31e',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '611f8544-b5a5-48c6-a763-bab1443aa998',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '19a75288-d4b5-4f81-9ab8-1092ccb34250',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'c77c3a12-7818-4f73-abfc-a5fb5c8ef6f3',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '1af52a09-bedf-4cb2-8755-355e8ef5eab0',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '4624aa9a-5cc6-4816-a05c-22463947099d',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '9e334a02-c77b-41cc-ab08-57d88a920e35',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Snapshot status error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async syncJobSnapshots (/opt/aws-snapshot-portal-V3-0411/server.js:1119:13)
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:2720:13 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '7519d5ca-e0f8-4b37-ae7c-c37eeddf48bf',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Snapshot status error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async syncJobSnapshots (/opt/aws-snapshot-portal-V3-0411/server.js:1119:13)
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:2720:13 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'af767af7-7f8d-4a0a-81e8-5c8e2b9a7a41',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Snapshot status error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async syncJobSnapshots (/opt/aws-snapshot-portal-V3-0411/server.js:1119:13)
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:2720:13 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '5c7e4bb7-95ae-4fa3-b2f8-954ed1d84352',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Snapshot status error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async syncJobSnapshots (/opt/aws-snapshot-portal-V3-0411/server.js:1119:13)
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:2720:13 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '8eaf487b-6188-482a-b4ef-abbc4c0a2d07',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'de3a30b3-338b-4359-a41b-63e026f24b3f',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'a79711f3-57e9-410d-b1ae-89a6232334f0',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'f0d125c8-591e-4988-a08a-3bc14212cd65',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '89182d78-1a4f-4427-9d58-9b1fc13db83c',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '667d0e3f-fad7-40b3-855a-05c7451a157b',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'c5d4ed6d-de06-4659-871b-794e1466ef4f',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'a1410cde-355d-4512-8f0d-dc7d42c01e7e',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '2b5c9039-b50c-4985-9b18-60485e9dc2cd',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '6afeea19-d74f-4742-94b8-57dadc0aab5a',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '92649eb7-8612-4b57-b205-e46bb4ec9f9f',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '92c15d40-0abb-4af0-8a10-b210755018d8',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '44cf162c-948d-4919-8661-4656635980f8',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'd2983c95-a297-4fb6-b8dc-c114fd37a960',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'a46cdbbc-5be2-4040-a6b6-d1bff8a0ffbf',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'a0a7c9e7-5003-4108-9461-1d2fd15acec9',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'ec2d2cac-257a-46ba-b997-b738b1b34892',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '75d6559c-ae97-439d-b3bf-f9ca92261277',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '6c9600c8-6180-4604-8da2-5e7a9083876b',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '9c54dcc6-47c3-455e-a804-4b27434257d5',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'a930fb2a-de3c-44cc-bf59-0a92abd7216f',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'b60a8112-3f3a-42f8-9df3-bd327ebc79e2',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'bda19e56-65b8-46a3-a60f-4bae869a00c5',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '24c41bb2-6786-405f-95d4-a8d852315ba7',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'f1c27179-7cc3-4ecf-ab14-6c3034cc68e7',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '1272bb05-9633-40b0-b4b8-54f8a819b890',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '01593574-7b06-45f9-8e05-34528f2d01ba',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'ecd59d7a-506a-419a-9969-5adf454a97e0',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '067ebe3a-a333-442d-9abf-33a3cf8cbab4',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '98469f92-a6d7-47df-a3ee-fdf0a8ce5e3e',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '8946435f-ea61-491c-ab83-d20a2c37ea50',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '1f2d6fb7-4856-465c-b8f0-21bdb089c998',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '8b7d5f27-da5d-4cef-9831-3fce33898509',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '76c0b764-3c72-4479-983a-b0362f5684be',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '4a5335e8-a109-427c-aa03-44a1d74fd178',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '7ad89e95-dc71-498c-b4d0-7cc27a234b0b',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '6c3113b6-6c0c-4d1e-8443-f671a76eb13f',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '638e3556-5ff9-4627-8ac7-dff03ef18427',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'ef7772da-664e-4d79-b49a-2cc60d4349f3',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'd1288139-7e1c-46e5-b683-215618e85f87',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '54d17f17-7561-4e04-b01c-646ffda9d509',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'aec8334b-201b-415e-b6f8-c8eeb5f2b86c',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '6c99a1ff-a0c1-4030-8ab8-45454b7f3131',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '05d90aa4-8f6c-4b9d-a4ce-96a6d59ca43a',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'a5716739-b51d-4227-a5f8-ba9de520e91e',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'fd99f181-d044-44db-bffe-0b20840530be',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'c0305a63-3c78-4689-b6a3-b580cabb582d',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'c2e0ca27-fb62-4ffd-8d21-62426a258801',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'f05c4e36-6d2e-4511-85bd-54d74718bf95',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'ae229133-d2b3-4bd4-b4ac-215b24bf62dc',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '72d042b0-92cf-4d34-95b8-6e438a7c746a',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '37ee2008-2420-44d2-81b2-76c9b4cb46fd',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'a89decf2-df33-4eec-875d-42bff4365c60',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '94620805-7c5d-4ef7-9ec7-42e03fddb910',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '44dcaf01-f8a5-487a-a502-50cd2a612d7b',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '511eaea8-bac8-471e-b1ee-3a08c74e4911',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get volumes error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1457:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '2ae45c48-c8e1-46d6-9dcf-55e6f06b8fce',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get instances error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1319:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '8739898f-4353-4515-9d30-31d19c85bb72',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}
+Get snapshots error: RequestExpired: Request has expired.
+    at ProtocolLib.getErrorSchemaOrThrowBaseException (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:68:67)
+    at AwsEc2QueryProtocol.handleError (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2352:65)
+    at AwsEc2QueryProtocol.deserializeResponse (/opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2322:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/index.js:118:20
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /opt/aws-snapshot-portal-V3-0411/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26
+    at async /opt/aws-snapshot-portal-V3-0411/server.js:1585:17 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: 'fc66eb38-dc71-4f97-b306-8a580c771b18',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'RequestExpired',
+  Error: {
+    Type: undefined,
+    Code: 'RequestExpired',
+    Message: 'Request has expired.'
+  }
+}

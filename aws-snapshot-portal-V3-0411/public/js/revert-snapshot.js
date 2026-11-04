@@ -1,364 +1,323 @@
+"use strict";
+
 /* =========================================================
-   DEDICATED SNAPSHOT REVERT MODULE (revert-snapshot.js)
-   Multi-Account, Multi-Instance, Multi-Volume Queue & Revert
+   REVERT SNAPSHOT MODULE
 ========================================================= */
 
-window.awsAccountsData = window.awsAccountsData || {};
+const revertModuleState = {
+    instances: [],
+    volumes: [],
+    snapshots: [],
+    queue: []
+};
 
-async function getOrCreateAccountClient(accountKey, region) {
-    if (!window.awsAccountsData[accountKey]) {
-        const inputKey = prompt(`[Account: ${accountKey}] AWS Access Key ID required:`);
-        if (!inputKey) return null;
-        
-        const inputSecret = prompt(`[Account: ${accountKey}] AWS Secret Access Key required:`);
-        if (!inputSecret) return null;
+/**
+ * Load AWS resources (Instances, Volumes, Snapshots) for the Revert page.
+ */
+async function loadRevertPageData() {
+    const activeAccount = getActiveAccount();
+    const sessionAccountEl = document.getElementById("revert-session-account");
+    const sessionRegionEl = document.getElementById("revert-session-region");
+    const select = document.getElementById("restore-instance-select") || document.getElementById("revert-instance");
 
-        const inputToken = prompt(`[Account: ${accountKey}] AWS Session Token (Optional - leave blank if none):`);
-
-        window.awsAccountsData[accountKey] = {
-            accessKeyId: inputKey.trim(),
-            secretAccessKey: inputSecret.trim(),
-            sessionToken: inputToken ? inputToken.trim() : undefined
-        };
+    if (!activeAccount) {
+        if (sessionAccountEl) sessionAccountEl.textContent = "No active account session";
+        if (sessionRegionEl) sessionRegionEl.textContent = "-";
+        if (select) {
+            select.innerHTML = `<option value="">Connect an AWS account first</option>`;
+            select.disabled = true;
+        }
+        toast("Please connect an AWS account first.", "error");
+        return;
     }
 
-    const credentials = window.awsAccountsData[accountKey];
-    const EC2Client = window.EC2Client;
-    return new EC2Client({ region, credentials });
-}
+    if (sessionAccountEl) sessionAccountEl.textContent = activeAccount.name || "Default Account";
+    if (sessionRegionEl) sessionRegionEl.textContent = activeAccount.region || "us-west-1";
 
-async function fetchAWSDataForAccount(accountKey, region, actionType, payload = {}) {
-    const ec2Client = await getOrCreateAccountClient(accountKey, region);
-    if (!ec2Client) return [];
-
-    const DescribeInstancesCommand = window.DescribeInstancesCommand;
-    const DescribeVolumesCommand = window.DescribeVolumesCommand;
-    const DescribeSnapshotsCommand = window.DescribeSnapshotsCommand;
+    if (select) {
+        select.innerHTML = `<option value="">Loading instances from active session...</option>`;
+        select.disabled = true;
+    }
 
     try {
-        if (actionType === 'instances') {
-            const response = await ec2Client.send(new DescribeInstancesCommand({}));
-            const instances = [];
-            response.Reservations?.forEach(res => {
-                res.Instances?.forEach(inst => {
-                    const nameTag = inst.Tags?.find(t => t.Key === 'Name');
-                    instances.push({
-                        id: inst.InstanceId,
-                        name: nameTag ? nameTag.Value : 'Unnamed',
-                        state: inst.State.Name,
-                        az: inst.Placement?.AvailabilityZone || `${region}a`
-                    });
-                });
-            });
-            return instances;
-        }
+        setLoading(true, "Loading resources for revert pipeline...");
+        const requestBody = JSON.stringify(getRequestBody());
 
-        if (actionType === 'volumes') {
-            if (!payload.instanceId) return [];
-            const response = await ec2Client.send(new DescribeVolumesCommand({
-                Filters: [{ Name: 'attachment.instance-id', Values: [payload.instanceId] }]
-            }));
-            return response.Volumes?.map(vol => ({
-                id: vol.VolumeId,
-                device: vol.Attachments?.[0]?.Device || '/dev/xvda',
-                size: `${vol.Size} GiB`,
-                status: vol.State,
-                availabilityZone: vol.AvailabilityZone
-            })) || [];
-        }
+        const [instancesRes, volumesRes, snapshotsRes] = await Promise.all([
+            api("/api/aws/instances", { method: "POST", body: requestBody }),
+            api("/api/aws/volumes", { method: "POST", body: requestBody }),
+            api("/api/aws/snapshots", { method: "POST", body: requestBody })
+        ]);
 
-        if (actionType === 'snapshots') {
-            if (!payload.volumeId) return [];
-            const response = await ec2Client.send(new DescribeSnapshotsCommand({
-                OwnerIds: ['self'],
-                Filters: [{ Name: 'volume-id', Values: [payload.volumeId] }]
-            }));
-            return response.Snapshots?.map(snap => ({
-                id: snap.SnapshotId,
-                desc: snap.Description || 'No description',
-                size: `${snap.VolumeSize} GiB`
-            })) || [];
-        }
-        return [];
+        revertModuleState.instances = instancesRes.instances || [];
+        revertModuleState.volumes = volumesRes.volumes || [];
+        revertModuleState.snapshots = snapshotsRes.snapshots || [];
+
+        renderRevertInstanceDropdown(revertModuleState.instances);
+        toast("AWS instances and snapshot catalog ready.", "success");
     } catch (error) {
-        console.error(`Multi-Account Fetch Error (${accountKey}):`, error);
-        alert(`AWS Error for account ${accountKey}: ${error.message}`);
-        return [];
+        console.error("Failed to load revert page data:", error);
+        if (select) {
+            select.innerHTML = `<option value="">Failed to load instances. Check credentials.</option>`;
+        }
+        toast(error?.message || "Unable to load revert resources.", "error");
+    } finally {
+        setLoading(false);
     }
 }
 
-async function executeParallelMultiAccountRestore(tasks) {
-    console.log(`Starting parallel cross-account restore for ${tasks.length} task(s)...`);
-    
-    const promises = tasks.map(async (task) => {
-        const { accountKey, region, instanceId, oldVolumeId, snapshotId, deviceName, availabilityZone } = task;
-        try {
-            const ec2Client = await getOrCreateAccountClient(accountKey, region);
-            if (!ec2Client) throw new Error("Could not initialize account credentials.");
+function renderRevertInstanceDropdown(instances) {
+    const select = document.getElementById("restore-instance-select") || document.getElementById("revert-instance");
+    if (!select) return;
 
-            console.log(`[${accountKey} / ${instanceId}] Stopping instance for volume ${oldVolumeId}...`);
-            await ec2Client.send(new window.StopInstancesCommand({ InstanceIds: [instanceId] }));
-            
-            let isStopped = false;
-            while (!isStopped) {
-                await new Promise(res => setTimeout(res, 5000));
-                const instances = await fetchAWSDataForAccount(accountKey, region, 'instances');
-                const target = instances.find(i => i.id === instanceId);
-                if (target && target.state === 'stopped') isStopped = true;
-            }
-
-            console.log(`[${accountKey} / ${instanceId}] Detaching volume ${oldVolumeId}...`);
-            await ec2Client.send(new window.DetachVolumeCommand({ VolumeId: oldVolumeId, InstanceId: instanceId }));
-            
-            let isDetached = false;
-            while (!isDetached) {
-                await new Promise(res => setTimeout(res, 4000));
-                const vols = await fetchAWSDataForAccount(accountKey, region, 'volumes', { instanceId });
-                if (!vols.find(v => v.id === oldVolumeId)) isDetached = true;
-            }
-
-            console.log(`[${accountKey} / ${instanceId}] Creating volume from snapshot ${snapshotId}...`);
-            const createResp = await ec2Client.send(new window.CreateVolumeCommand({
-                SnapshotId: snapshotId,
-                AvailabilityZone: availabilityZone,
-                VolumeType: 'gp3'
-            }));
-            const newVolumeId = createResp.VolumeId;
-
-            let newVolReady = false;
-            while (!newVolReady) {
-                await new Promise(res => setTimeout(res, 5000));
-                const checkResp = await ec2Client.send(new window.DescribeVolumesCommand({ VolumeIds: [newVolumeId] }));
-                if (checkResp.Volumes?.[0]?.State === 'available') newVolReady = true;
-            }
-
-            console.log(`[${accountKey} / ${instanceId}] Attaching new volume ${newVolumeId} as ${deviceName}...`);
-            await ec2Client.send(new window.AttachVolumeCommand({
-                VolumeId: newVolumeId,
-                InstanceId: instanceId,
-                Device: deviceName
-            }));
-
-            console.log(`[${accountKey} / ${instanceId}] Restarting instance...`);
-            await ec2Client.send(new window.StartInstancesCommand({ InstanceIds: [instanceId] }));
-
-            return { accountKey, instanceId, volumeId: oldVolumeId, success: true, newVolumeId };
-        } catch (error) {
-            console.error(`[${accountKey} / ${instanceId}] Volume restore failed:`, error);
-            return { accountKey, instanceId, volumeId: oldVolumeId, success: false, error: error.message };
-        }
-    });
-
-    const results = await Promise.all(promises);
-    const successCount = results.filter(r => r.success).length;
-    const failures = results.filter(r => !r.success);
-
-    if (failures.length === 0) {
-        alert(`Successfully completed all ${successCount} volume restoration tasks in parallel!`);
-    } else {
-        const errSummary = failures.map(f => `[${f.accountKey}] Inst ${f.instanceId} / Vol ${f.volumeId}: ${f.error}`).join('\n');
-        alert(`Finished with errors. Success: ${successCount}, Failed: ${failures.length}\n\n${errSummary}`);
+    if (!instances.length) {
+        select.innerHTML = `<option value="">No instances found in active region</option>`;
+        select.disabled = true;
+        return;
     }
-    window.location.reload();
+
+    select.innerHTML = `<option value="">Select an instance...</option>` +
+        instances.map(inst => `
+            <option value="${escapeHtml(inst.instanceId || inst.instance_id)}">
+                ${escapeHtml(inst.name || "Unnamed")} (${escapeHtml(inst.instanceId || inst.instance_id)})
+            </option>
+        `).join("");
+    select.disabled = false;
 }
 
-function initRevertSnapshotModule() {
-    console.log("Queue-Enabled Multi-Volume Revert Module initialized.");
-    const accountInput = document.getElementById('restore-account-input') || { value: 'default-account' };
-    const regionSelect = document.getElementById('restore-region-select');
-    const instanceSelect = document.getElementById('restore-instance-select');
-    const volumeSelect = document.getElementById('restore-volume-select');
-    const snapshotSelect = document.getElementById('restore-snapshot-select');
-    const addToQueueBtn = document.getElementById('add-to-queue-btn');
-    const executeButton = document.getElementById('restore-snapshot-button');
-    const refreshButton = document.getElementById('refresh-revert-data');
-    const queueListContainer = document.getElementById('restore-queue-list');
-    const queueCounterBadge = document.getElementById('queue-counter-badge');
+function loadInstanceVolumesLocally(instanceId) {
+    const volumeSelect = document.getElementById("restore-volume-select") || document.getElementById("revert-volumes");
+    const snapshotSelect = document.getElementById("restore-snapshot-select");
 
-    if (!regionSelect) return;
+    if (!volumeSelect) return;
 
-    let multiTaskQueue = [];
+    const instanceVolumes = revertModuleState.volumes.filter(vol => {
+        const attachedTo = String(vol.attachedInstance || vol.instanceId || vol.instance_id || "").trim();
+        return attachedTo === String(instanceId).trim();
+    });
 
-    function renderQueueUI() {
-        if (!queueListContainer) return;
-        queueCounterBadge.textContent = `${multiTaskQueue.length} task(s) queued`;
-
-        if (multiTaskQueue.length === 0) {
-            queueListContainer.innerHTML = '<p id="queue-empty-text" style="color: var(--text-muted, #888); font-size: 13px; text-align: center; margin: 10px 0;">No restore tasks added to the queue yet.</p>';
-            if (executeButton) executeButton.disabled = true;
-            return;
-        }
-
-        queueListContainer.innerHTML = '';
-        multiTaskQueue.forEach((task, index) => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'restore-queue-item';
-            itemDiv.innerHTML = `
-                <span><strong>${task.accountKey}</strong> / Inst: <code>${task.instanceId}</code> / Vol: <code>${task.oldVolumeId}</code> ➔ Snap: <code>${task.snapshotId}</code></span>
-                <button type="button" class="restore-queue-remove" data-index="${index}" title="Remove Task">&times;</button>
-            `;
-            queueListContainer.appendChild(itemDiv);
-        });
-
-        // Bind delete triggers
-        queueListContainer.querySelectorAll('.restore-queue-remove').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const idx = parseInt(e.target.getAttribute('data-index'));
-                multiTaskQueue.splice(idx, 1);
-                renderQueueUI();
-            });
-        });
-
-        if (executeButton) executeButton.disabled = false;
+    if (!instanceVolumes.length) {
+        volumeSelect.innerHTML = `<option value="">No EBS volumes attached to this instance</option>`;
+        volumeSelect.disabled = true;
+        toast("No attached EBS volumes found for this instance.", "error");
+        return;
     }
 
-    regionSelect.addEventListener('change', async (e) => {
-        const region = e.target.value;
-        const accountKey = accountInput.value.trim() || 'default-account';
-        if (!region) return;
+    volumeSelect.innerHTML = instanceVolumes.map(vol => `
+        <option value="${escapeHtml(vol.volumeId || vol.volume_id)}">
+            ${escapeHtml(vol.name || vol.volumeId || vol.volume_id)} (${escapeHtml(vol.size || 0)} GB) - [${escapeHtml(vol.state || "in-use")}]
+        </option>
+    `).join("");
 
-        instanceSelect.innerHTML = '<option value="">Loading instances...</option>';
-        instanceSelect.disabled = false;
+    volumeSelect.disabled = false;
 
-        const instances = await fetchAWSDataForAccount(accountKey, region, 'instances');
-        instanceSelect.innerHTML = '<option value="">Select instance</option>';
-        instances.forEach(inst => {
-            const opt = document.createElement('option');
-            opt.value = inst.id;
-            opt.textContent = `${inst.name} (${inst.id}) - [${inst.state}]`;
-            opt.dataset.state = inst.state;
-            opt.dataset.az = inst.az;
-            instanceSelect.appendChild(opt);
-        });
+    if (snapshotSelect) {
+        snapshotSelect.innerHTML = `<option value="">Select volume(s) first</option>`;
+        snapshotSelect.disabled = true;
+    }
+
+    toast(`${instanceVolumes.length} attached volume(s) loaded.`, "success");
+}
+
+function loadSnapshotsForVolumesLocally(volumeIds) {
+    const snapshotSelect = document.getElementById("restore-snapshot-select");
+    const addToQueueBtn = document.getElementById("add-to-queue-btn");
+
+    if (!snapshotSelect) return;
+
+    const matchingSnapshots = revertModuleState.snapshots.filter(snap => {
+        const snapVolId = String(snap.volumeId || snap.volume_id || "").trim();
+        return volumeIds.includes(snapVolId);
     });
 
-    instanceSelect.addEventListener('change', async (e) => {
-        const instanceId = e.target.value;
-        const region = regionSelect.value;
-        const accountKey = accountInput.value.trim() || 'default-account';
-        if (!instanceId) return;
+    if (!matchingSnapshots.length) {
+        snapshotSelect.innerHTML = `<option value="">No snapshots found for selected volume(s)</option>`;
+        snapshotSelect.disabled = true;
+        if (addToQueueBtn) addToQueueBtn.disabled = true;
+        toast("No matching snapshots found for selected volume.", "error");
+        return;
+    }
 
-        volumeSelect.innerHTML = '<option value="">Loading volumes...</option>';
-        volumeSelect.disabled = false;
+    snapshotSelect.innerHTML = matchingSnapshots.map(snap => `
+        <option value="${escapeHtml(snap.snapshotId || snap.snapshot_id)}">
+            [${escapeHtml(snap.volumeId || snap.volume_id)}] ${escapeHtml(snap.snapshotId || snap.snapshot_id)} — ${formatDate(snap.startTime || snap.start_time)} (${escapeHtml(snap.progress || "100%")})
+        </option>
+    `).join("");
 
-        const volumes = await fetchAWSDataForAccount(accountKey, region, 'volumes', { instanceId });
-        volumeSelect.innerHTML = '';
-        volumes.forEach(vol => {
-            const opt = document.createElement('option');
-            opt.value = vol.id;
-            opt.textContent = `${vol.id} (${vol.device} - ${vol.size})`;
-            opt.dataset.device = vol.device;
-            opt.dataset.az = vol.availabilityZone;
-            volumeSelect.appendChild(opt);
-        });
-    });
+    snapshotSelect.disabled = false;
+    if (addToQueueBtn) addToQueueBtn.disabled = false;
 
-    volumeSelect.addEventListener('change', async () => {
-        const selectedOptions = Array.from(volumeSelect.selectedOptions);
-        const region = regionSelect.value;
-        const accountKey = accountInput.value.trim() || 'default-account';
-        if (selectedOptions.length === 0) return;
+    toast(`${matchingSnapshots.length} snapshot(s) available for restore.`, "success");
+}
 
-        snapshotSelect.innerHTML = '<option value="">Loading snapshots for all selected volumes...</option>';
-        snapshotSelect.disabled = false;
+function addRevertTaskToQueue() {
+    const instanceSelect = document.getElementById("restore-instance-select") || document.getElementById("revert-instance");
+    const volumeSelect = document.getElementById("restore-volume-select") || document.getElementById("revert-volumes");
+    const snapshotSelect = document.getElementById("restore-snapshot-select");
 
-        let allSnapshotsMap = [];
-        for (const volOpt of selectedOptions) {
-            const volId = volOpt.value;
-            const snaps = await fetchAWSDataForAccount(accountKey, region, 'snapshots', { volumeId: volId });
-            snaps.forEach(snap => {
-                allSnapshotsMap.push({
-                    ...snap,
-                    targetVolumeId: volId,
-                    displayLabel: `[Vol: ${volId}] ${snap.id} - ${snap.desc} (${snap.size})`
-                });
-            });
-        }
+    const instanceId = instanceSelect?.value;
+    const selectedVolumeOptions = Array.from(volumeSelect?.selectedOptions || []);
+    const snapshotId = snapshotSelect?.value;
 
-        snapshotSelect.innerHTML = '<option value="">Select snapshot mapping</option>';
-        if (allSnapshotsMap.length === 0) {
-            snapshotSelect.innerHTML = '<option value="">No snapshots found for selected volumes</option>';
-            return;
-        }
+    if (!instanceId) {
+        toast("Please select an EC2 instance first.", "error");
+        return;
+    }
 
-        allSnapshotsMap.forEach(snap => {
-            const opt = document.createElement('option');
-            opt.value = snap.id;
-            opt.textContent = snap.displayLabel;
-            opt.dataset.volumeId = snap.targetVolumeId;
-            snapshotSelect.appendChild(opt);
-        });
-    });
+    if (!selectedVolumeOptions.length) {
+        toast("Please select at least one volume to replace.", "error");
+        return;
+    }
 
-    snapshotSelect.addEventListener('change', () => {
-        if (snapshotSelect.value && addToQueueBtn) addToQueueBtn.disabled = false;
-    });
+    if (!snapshotId) {
+        toast("Please select a target snapshot to restore.", "error");
+        return;
+    }
 
-    if (addToQueueBtn) {
-        addToQueueBtn.onclick = () => {
-            const accountKey = document.getElementById('restore-account-input')?.value.trim() || 'default-account';
-            const region = regionSelect.value;
-            const instanceId = instanceSelect.value;
-            const selectedSnapshotOpt = snapshotSelect.selectedOptions[0];
-            const snapshotId = snapshotSelect.value;
+    selectedVolumeOptions.forEach(volOpt => {
+        const volumeId = volOpt.value;
+        const exists = revertModuleState.queue.some(
+            task => task.instanceId === instanceId && task.volumeId === volumeId
+        );
 
-            if (!region || !instanceId || !snapshotId) {
-                alert("Please select a region, instance, volume, and snapshot mapping before adding to queue.");
-                return;
-            }
-
-            const targetVolumeId = selectedSnapshotOpt.dataset.volumeId;
-            const targetVolElement = Array.from(volumeSelect.options).find(opt => opt.value === targetVolumeId);
-
-            if (!targetVolElement) {
-                alert("Could not map the selected snapshot to a target volume.");
-                return;
-            }
-
-            multiTaskQueue.push({
-                accountKey,
-                region,
+        if (!exists) {
+            revertModuleState.queue.push({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
                 instanceId,
-                oldVolumeId: targetVolumeId,
-                snapshotId,
-                deviceName: targetVolElement.dataset.device,
-                availabilityZone: targetVolElement.dataset.az
+                volumeId,
+                snapshotId
             });
+        }
+    });
 
-            renderQueueUI();
+    renderRevertQueue();
+    toast("Task added to restore queue.", "success");
+}
 
-            // Reset snapshot selection for next add
-            snapshotSelect.value = '';
-            addToQueueBtn.disabled = true;
-        };
+function removeTaskFromQueue(taskId) {
+    revertModuleState.queue = revertModuleState.queue.filter(task => task.id !== taskId);
+    renderRevertQueue();
+    toast("Task removed from queue.", "info");
+}
+
+function renderRevertQueue() {
+    const container = document.getElementById("restore-queue-list");
+    const counterBadge = document.getElementById("queue-counter-badge");
+    const executeBtn = document.getElementById("revert-snapshot-button") || document.getElementById("restore-snapshot-button");
+
+    if (!container) return;
+
+    if (counterBadge) {
+        counterBadge.textContent = `${revertModuleState.queue.length} task${revertModuleState.queue.length === 1 ? "" : "s"} queued`;
     }
 
-    if (executeButton) {
-        executeButton.onclick = async () => {
-            if (multiTaskQueue.length === 0) {
-                alert("No tasks in execution queue.");
-                return;
-            }
-
-            const confirmExec = confirm(`Are you sure you want to execute ${multiTaskQueue.length} restore task(s) in parallel across your accounts/instances?`);
-            if (!confirmExec) return;
-
-            executeButton.disabled = true;
-            executeButton.textContent = `Executing ${multiTaskQueue.length} Tasks...`;
-
-            await executeParallelMultiAccountRestore(multiTaskQueue);
-        };
+    if (!revertModuleState.queue.length) {
+        container.innerHTML = `<p style="color: #888; font-size: 12px; text-align: center;">No restore tasks in queue.</p>`;
+        if (executeBtn) executeBtn.disabled = true;
+        return;
     }
 
-    if (refreshButton) {
-        refreshButton.addEventListener('click', () => {
-            if (regionSelect.value) regionSelect.dispatchEvent(new Event('change'));
+    container.innerHTML = revertModuleState.queue.map(task => `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; font-size: 12px;">
+            <div>
+                <strong>Instance:</strong> ${escapeHtml(task.instanceId)} | 
+                <strong>Vol:</strong> <code>${escapeHtml(task.volumeId)}</code> | 
+                <strong>Snap:</strong> <code>${escapeHtml(task.snapshotId)}</code>
+            </div>
+            <button type="button" onclick="removeTaskFromQueue('${task.id}')" style="background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid #f87171; border-radius: 4px; padding: 2px 6px; cursor: pointer;">Remove</button>
+        </div>
+    `).join("");
+
+    if (executeBtn) executeBtn.disabled = false;
+}
+
+async function executeRevertQueue() {
+    if (!revertModuleState.queue.length) {
+        const instanceId = document.getElementById("restore-instance-select")?.value || document.getElementById("revert-instance")?.value;
+        const volumeId = document.getElementById("restore-volume-select")?.value || document.getElementById("revert-volumes")?.value;
+        const snapshotId = document.getElementById("restore-snapshot-select")?.value;
+
+        if (instanceId && volumeId && snapshotId) {
+            revertModuleState.queue.push({
+                id: `${Date.now()}`,
+                instanceId,
+                volumeId,
+                snapshotId
+            });
+        } else {
+            toast("No tasks in execution queue. Add a mapping first.", "error");
+            return;
+        }
+    }
+
+    if (!confirm(`Execute volume restoration for ${revertModuleState.queue.length} queued task(s)? Target instances will be stopped.`)) {
+        return;
+    }
+
+    try {
+        setLoading(true, "Executing EBS volume restoration pipeline...");
+
+        const requestBody = {
+            ...getRequestBody(),
+            tasks: revertModuleState.queue
+        };
+
+        const data = await api("/api/aws/revert-snapshots", {
+            method: "POST",
+            body: JSON.stringify(requestBody)
         });
+
+        toast("Restoration pipeline initiated successfully!", "success");
+        revertModuleState.queue = [];
+        renderRevertQueue();
+
+        if (typeof showPage === "function") {
+            showPage("revert-dashboard");
+        }
+
+    } catch (error) {
+        console.error("Revert execution failed:", error);
+        toast(error?.message || "Failed to execute reversion pipeline.", "error");
+    } finally {
+        setLoading(false);
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('restore-region-select')) {
-        initRevertSnapshotModule();
+function resetRevertState() {
+    revertModuleState.queue = [];
+    renderRevertQueue();
+}
+
+// Bind module listeners on DOM load
+document.addEventListener("DOMContentLoaded", () => {
+    const instanceSelect = document.getElementById("restore-instance-select") || document.getElementById("revert-instance");
+    if (instanceSelect) {
+        instanceSelect.addEventListener("change", (e) => {
+            if (e.target.value) {
+                loadInstanceVolumesLocally(e.target.value);
+            }
+        });
+    }
+
+    const volumeSelect = document.getElementById("restore-volume-select") || document.getElementById("revert-volumes");
+    if (volumeSelect) {
+        volumeSelect.addEventListener("change", () => {
+            const selectedVolumeIds = Array.from(volumeSelect.selectedOptions).map(opt => opt.value);
+            if (selectedVolumeIds.length > 0) {
+                loadSnapshotsForVolumesLocally(selectedVolumeIds);
+            }
+        });
+    }
+
+    const addToQueueBtn = document.getElementById("add-to-queue-btn");
+    if (addToQueueBtn) {
+        addToQueueBtn.addEventListener("click", addRevertTaskToQueue);
+    }
+
+    const executeBtn = document.getElementById("revert-snapshot-button") || document.getElementById("restore-snapshot-button");
+    if (executeBtn) {
+        executeBtn.addEventListener("click", executeRevertQueue);
     }
 });
+
+window.removeTaskFromQueue = removeTaskFromQueue;
