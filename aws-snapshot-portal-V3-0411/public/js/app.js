@@ -689,12 +689,27 @@ function saveAccount() {
 }
 
 function resetRevertState() {
-    state.revert.instance = null;
-    state.revert.volumes = [];
-    state.revert.snapshots = [];
-    resetRevertFormSteps();
-}
+    if (!state.revert) {
+        state.revert = {
+            instance: null,
+            volumes: [],
+            snapshots: [],
+            selectedSnapshots: {},
+            restoring: false,
+            queue: []
+        };
+    } else {
+        state.revert.instance = null;
+        state.revert.volumes = [];
+        state.revert.snapshots = [];
+        state.revert.selectedSnapshots = {};
+        state.revert.restoring = false;
+    }
 
+    if (typeof resetRevertFormSteps === "function") {
+        resetRevertFormSteps();
+    }
+}
 function renderAccountList() {
     const container = $("account-list");
     if (!container) return;
