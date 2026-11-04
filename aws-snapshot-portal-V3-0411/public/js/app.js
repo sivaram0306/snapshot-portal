@@ -1645,11 +1645,11 @@ function showPage(page) {
     if (page !== "snapshots") stopSnapshotPolling();
     if (page !== "snapshot-dashboard") stopSnapshotDashboardPolling();
     if (page === "revert-snapshot") {
-        loadRevertPageData();
-    }
-    if (page === "revert-dashboard") {
-        loadRevertDashboard();
-    }
+        resetRevertState();
+        loadInstancesWithVolumeValidation().then(() => {
+            loadInstancesForRevert();
+        });
+    }   
     if (page === "centralized-dashboard") {
         loadCentralizedDashboard();
     }
@@ -2071,122 +2071,176 @@ function setupEventListeners() {
 }
 
 /* =========================================================
-   REVERT & REVERT DASHBOARD CONTROLLER LOGIC
+   SNAPSHOT REVERT WORKFLOW HELPERS
 ========================================================= */
 
-async function loadRevertPageData() {
-    const activeAccount = getActiveAccount();
-    const sessionAccountEl = document.getElementById("revert-session-account");
-    const sessionRegionEl = document.getElementById("revert-session-region");
-
-    if (!activeAccount) {
-        if (sessionAccountEl) sessionAccountEl.textContent = "No active account session";
-        if (sessionRegionEl) sessionRegionEl.textContent = "-";
-        toast("Please connect an AWS account first.", "error");
-        return;
-    }
-
-    if (sessionAccountEl) sessionAccountEl.textContent = activeAccount.name || "Default Account";
-    if (sessionRegionEl) sessionRegionEl.textContent = activeAccount.region || "us-west-1";
-
-    try {
-        setLoading(true, "Loading instances for volume reversion...");
-        const requestBody = JSON.stringify(getRequestBody());
-
-        const [instancesRes, volumesRes, snapshotsRes] = await Promise.all([
-            api("/api/aws/instances", { method: "POST", body: requestBody }),
-            api("/api/aws/volumes", { method: "POST", body: requestBody }),
-            api("/api/aws/snapshots", { method: "POST", body: requestBody })
-        ]);
-
-        state.instances = deduplicateInstances(instancesRes.instances || []);
-        state.volumes = Array.isArray(volumesRes.volumes) ? volumesRes.volumes : [];
-        state.snapshots = Array.isArray(snapshotsRes.snapshots) ? snapshotsRes.snapshots : [];
-
-        renderRevertInstanceDropdown(state.instances);
-        toast("Instances loaded for reversion.", "success");
-    } catch (error) {
-        console.error("Failed to load instances for revert:", error);
-        toast(error?.message || "Unable to load instances.", "error");
-    } finally {
-        setLoading(false);
-    }
-}
-
-function renderRevertInstanceDropdown(instances) {
-    const select = document.getElementById("restore-instance-select");
+function loadInstancesForRevert() {
+    const select = $("revert-instance");
     if (!select) return;
 
-    if (!instances.length) {
-        select.innerHTML = `<option value="">No instances found in active region</option>`;
-        select.disabled = true;
+    if (!state.instances.length) {
+        select.innerHTML = '<option value="">No instances available. Load instances first.</option>';
         return;
     }
 
-    select.innerHTML = `<option value="">Select an instance...</option>` +
-        instances.map(inst => `
-            <option value="${escapeHtml(inst.instanceId || inst.instance_id)}">
-                ${escapeHtml(inst.name || "Unnamed")} (${escapeHtml(inst.instanceId || inst.instance_id)})
-            </option>
-        `).join("");
-    select.disabled = false;
+    select.innerHTML = '<option value="">-- Select an Instance --</option>' + 
+        state.instances.map(inst => {
+            const id = inst.instanceId || inst.instance_id;
+            const name = inst.name || id;
+            return `<option value="${escapeHtml(id)}">${escapeHtml(name)} (${escapeHtml(id)})</option>`;
+        }).join("");
 }
 
-async function loadRevertDashboard() {
-    try {
-        const data = await api("/api/revert-dashboard").catch(() => ({ success: true, jobs: [], summary: {} }));
-        renderRevertDashboardData(data);
-    } catch (error) {
-        console.error("Failed to load revert dashboard:", error);
-    }
-}
+function selectRevertInstance(instanceId) {
+    const instance = state.instances.find(inst => (inst.instanceId || inst.instance_id) === instanceId);
+    state.revert.instance = instance || null;
+    state.revert.volumes = [];
+    state.revert.snapshots = [];
+    state.revert.selectedSnapshots = {};
 
-function renderRevertDashboardData(data) {
-    const summary = data.summary || {};
-    if (document.getElementById("rd-total-jobs")) document.getElementById("rd-total-jobs").textContent = summary.total || 0;
-    if (document.getElementById("rd-running-jobs")) document.getElementById("rd-running-jobs").textContent = summary.running || 0;
-    if (document.getElementById("rd-completed-jobs")) document.getElementById("rd-completed-jobs").textContent = summary.completed || 0;
-    if (document.getElementById("rd-failed-jobs")) document.getElementById("rd-failed-jobs").textContent = summary.failed || 0;
+    const volumesContainer = $("revert-volumes");
+    if (!volumesContainer) return;
 
-    const container = document.getElementById("revert-jobs-table");
-    if (!container) return;
-
-    const jobs = Array.isArray(data.jobs) ? data.jobs : [];
-    if (!jobs.length) {
-        container.innerHTML = `<div class="empty-state">No active or historical revert tasks found.</div>`;
+    if (!instance) {
+        volumesContainer.innerHTML = '<div class="muted">Select an instance to view attached volumes.</div>';
         return;
     }
 
-    container.innerHTML = `
+    // Filter volumes attached to this instance
+    const attachedVolumes = state.volumes.filter(vol => 
+        String(vol.attachedInstance || vol.instanceId || "").trim() === instanceId
+    );
+
+    state.revert.volumes = attachedVolumes;
+
+    if (!attachedVolumes.length) {
+        volumesContainer.innerHTML = '<div class="muted">No volumes attached to this instance.</div>';
+        return;
+    }
+
+    volumesContainer.innerHTML = `
         <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
-                        <th>Job ID</th>
-                        <th>Instance</th>
-                        <th>Volume</th>
-                        <th>Snapshot</th>
-                        <th>Status</th>
-                        <th>Started At</th>
+                        <th>Select</th>
+                        <th>Volume ID</th>
+                        <th>Size</th>
+                        <th>Device</th>
+                        <th>Target Snapshot</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${jobs.map(job => `
-                        <tr>
-                            <td><code>${escapeHtml(job.job_id || "-")}</code></td>
-                            <td>${escapeHtml(job.instance_id || "-")}</td>
-                            <td><code>${escapeHtml(job.volume_id || "-")}</code></td>
-                            <td><code>${escapeHtml(job.snapshot_id || "-")}</code></td>
-                            <td><span class="status ${escapeHtml(job.status || "")}">${escapeHtml(job.status || "-")}</span></td>
-                            <td>${formatDate(job.started_at)}</td>
-                        </tr>
-                    `).join("")}
+                    ${attachedVolumes.map(vol => {
+                        const volId = vol.volumeId;
+                        // Find matching snapshots for this volume
+                        const volSnapshots = state.snapshots.filter(s => s.volumeId === volId);
+                        
+                        return `
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="revert-volume-checkbox" data-volume-id="${escapeHtml(volId)}" checked />
+                                </td>
+                                <td><code>${escapeHtml(volId)}</code></td>
+                                <td>${escapeHtml(vol.size || 0)} GB</td>
+                                <td>${escapeHtml(vol.device || "-")}</td>
+                                <td>
+                                    <select class="revert-snapshot-select" data-volume-id="${escapeHtml(volId)}">
+                                        <option value="">-- Select Snapshot --</option>
+                                        ${volSnapshots.map(snap => `
+                                            <option value="${escapeHtml(snap.snapshotId)}">
+                                                ${escapeHtml(snap.snapshotId)} (${formatDate(snap.startTime)})
+                                            </option>
+                                        `).join("")}
+                                    </select>
+                                </td>
+                            </tr>
+                        `;
+                    }).join("")}
                 </tbody>
             </table>
         </div>
     `;
+
+    // Auto-select checkboxes for all loaded volumes by default
+    attachedVolumes.forEach(vol => {
+        state.revert.selectedSnapshots[vol.volumeId] = {
+            selected: true,
+            snapshotId: ""
+        };
+    });
 }
 
+function updateRevertCheckbox(volumeId, checked) {
+    if (state.revert.selectedSnapshots[volumeId]) {
+        state.revert.selectedSnapshots[volumeId].selected = checked;
+    } else {
+        state.revert.selectedSnapshots[volumeId] = { selected: checked, snapshotId: "" };
+    }
+}
+
+function updateRevertSelection(volumeId, snapshotId) {
+    if (!state.revert.selectedSnapshots[volumeId]) {
+        state.revert.selectedSnapshots[volumeId] = { selected: true, snapshotId: "" };
+    }
+    state.revert.selectedSnapshots[volumeId].snapshotId = snapshotId;
+}
+
+async function revertFromSnapshot() {
+    const instance = state.revert.instance;
+    if (!instance) {
+        toast("Please select an instance to revert.", "error");
+        return;
+    }
+
+    const instanceId = instance.instanceId || instance.instance_id;
+    const tasks = [];
+
+    for (const [volumeId, data] of Object.entries(state.revert.selectedSnapshots)) {
+        if (data.selected && data.snapshotId) {
+            tasks.push({
+                instanceId,
+                volumeId,
+                snapshotId: data.snapshotId
+            });
+        }
+    }
+
+    if (!tasks.length) {
+        toast("Please select at least one volume and map it to a snapshot.", "error");
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to revert ${tasks.length} volume(s) for instance ${instanceId}? This will restart the instance.`)) {
+        return;
+    }
+
+    try {
+        setLoading(true, "Initiating snapshot reversion pipeline...");
+
+        const requestPayload = {
+            ...getRequestBody(),
+            tasks
+        };
+
+        const response = await api("/api/aws/revert-snapshots", {
+            method: "POST",
+            body: JSON.stringify(requestPayload)
+        });
+
+        toast("Snapshot reversion job initiated successfully.", "success");
+        console.log("Revert response:", response);
+
+        // Optionally navigate to dashboard or reset state
+        showPage("snapshot-dashboard");
+
+    } catch (error) {
+        console.error("Revert snapshot failed:", error);
+        toast(error?.message || "Failed to execute snapshot reversion.", "error");
+    } finally {
+        setLoading(false);
+    }
+}
 /* =========================================================
    GLOBAL ERROR HANDLING
 ========================================================= */
