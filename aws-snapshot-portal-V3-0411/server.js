@@ -3181,7 +3181,106 @@ async function start() {
         process.exit(1);
     }
 }
+function createEc2Client(body) {
+    return new EC2Client({
+        region: body.region,
+        credentials: {
+            accessKeyId: body.accessKeyId,
+            secretAccessKey: body.secretAccessKey,
+            sessionToken: body.sessionToken || ""
+        }
+    });
+}
 
+function generateRevertJobId() {
+    return "REV-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+}
+
+/* =========================================================
+   ASYNCHRONOUS REVERT SNAPSHOTS ENDPOINT
+========================================================= */
+
+app.post("/api/aws/revert-snapshots", async (req, res) => {
+    try {
+        const { tasks } = req.body;
+        if (!Array.isArray(tasks) || !tasks.length) {
+            return res.status(400).json({ success: false, error: "No tasks provided." });
+        }
+
+        const dispatchedJobs = [];
+
+        for (const task of tasks) {
+            const { instanceId, volumeId, snapshotId } = task;
+            const jobId = generateRevertJobId();
+
+            await pool.query(
+                `INSERT INTO revert_jobs (job_id, instance_id, volume_id, snapshot_id, status) VALUES (?, ?, ?, ?, 'running')`,
+                [jobId, instanceId, volumeId, snapshotId]
+            );
+
+            dispatchedJobs.push({ jobId, instanceId, volumeId, snapshotId });
+
+            // Run AWS orchestration in background
+            processRevertJob(req.body, jobId, instanceId, volumeId, snapshotId).catch(err => {
+                console.error(`Job ${jobId} failed:`, err);
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Revert pipeline dispatched successfully.",
+            jobs: dispatchedJobs
+        });
+    } catch (error) {
+        console.error("Revert route error:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+async function processRevertJob(body, jobId, instanceId, volumeId, snapshotId) {
+    const ec2 = createEc2Client(body);
+    try {
+        const volDesc = await ec2.send(new DescribeVolumesCommand({ VolumeIds: [volumeId] }));
+        const targetVolume = volDesc.Volumes?.[0];
+        if (!targetVolume) throw new Error(`Original volume ${volumeId} not found.`);
+
+        const availabilityZone = targetVolume.AvailabilityZone;
+        const attachment = targetVolume.Attachments?.[0];
+        const deviceName = attachment ? attachment.Device : "/dev/sda1";
+
+        // Step 1: Stop EC2 Instance
+        await ec2.send(new StopInstancesCommand({ InstanceIds: [instanceId] }));
+        await new Promise(r => setTimeout(r, 8000));
+
+        // Step 2: Detach volume
+        if (attachment) {
+            await ec2.send(new DetachVolumeCommand({ VolumeId: volumeId, InstanceId: instanceId }));
+            await new Promise(r => setTimeout(r, 6000));
+        }
+
+        // Step 3: Create new volume from snapshot
+        const newVol = await ec2.send(new CreateVolumeCommand({
+            SnapshotId: snapshotId,
+            AvailabilityZone: availabilityZone,
+            VolumeType: targetVolume.VolumeType || "gp3"
+        }));
+        await new Promise(r => setTimeout(r, 6000));
+
+        // Step 4: Attach new volume
+        await ec2.send(new AttachVolumeCommand({
+            VolumeId: newVol.VolumeId,
+            InstanceId: instanceId,
+            Device: deviceName
+        }));
+
+        // Step 5: Start Instance
+        await ec2.send(new StartInstancesCommand({ InstanceIds: [instanceId] }));
+
+        await pool.query(`UPDATE revert_jobs SET status = 'completed', volume_id = ? WHERE job_id = ?`, [newVol.VolumeId, jobId]);
+    } catch (err) {
+        await pool.query(`UPDATE revert_jobs SET status = 'failed' WHERE job_id = ?`, [jobId]);
+    }
+}
 /* =========================================================
    CENTRALIZED MULTI-ACCOUNT DASHBOARD ENDPOINT
 ========================================================= */

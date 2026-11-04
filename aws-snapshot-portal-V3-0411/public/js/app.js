@@ -12,14 +12,6 @@ const state = {
     volumes: [],
     snapshots: [],
 
-    revert: {
-        instance: null,
-        volumes: [],
-        snapshots: [],
-        selectedSnapshots: {},
-        restoring: false,
-        queue: []
-    },
 
     currentPage: "dashboard",
 
@@ -414,9 +406,6 @@ function regionChanged() {
         loadInstancesWithVolumeValidation();
     }
 
-    if (state.currentPage === "revert-snapshot") {
-        loadRevertPageData();
-    }
 
     toast(
         `Region changed to ${account.region}.`,
@@ -1634,12 +1623,6 @@ function showPage(page) {
 
     if (page !== "snapshots") stopSnapshotPolling();
     if (page !== "snapshot-dashboard") stopSnapshotDashboardPolling();
-    if (page === "revert-snapshot") {
-        loadRevertPageData();
-    }
-    if (page === "revert-dashboard") {
-        loadRevertDashboard();
-    }
     if (page === "centralized-dashboard") {
         loadCentralizedDashboard();
     }
@@ -1652,7 +1635,34 @@ function showPage(page) {
     document.querySelectorAll("[data-page]").forEach(button => {
         button.classList.toggle("active", button.dataset.page === page);
     });
+   function showPage(page) {
+    if (!page) page = "dashboard";
+    
+    document.querySelectorAll(".page").forEach(el => el.classList.toggle("active", el.id === page));
+    document.querySelectorAll("[data-page]").forEach(btn => btn.classList.toggle("active", btn.dataset.page === page));
+    
+    state.currentPage = page;
 
+    if (page === "revert-snapshot" && typeof loadRevertPageData === "function") {
+        loadRevertPageData();
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        const raw = sessionStorage.getItem("awsSnapshotAccounts");
+        state.accounts = raw ? JSON.parse(raw) : [];
+        state.activeAccountId = sessionStorage.getItem("awsSnapshotActiveAccount") || (state.accounts[0]?.id || null);
+        
+        document.querySelectorAll("[data-page]").forEach(btn => {
+            btn.addEventListener("click", () => showPage(btn.dataset.page));
+        });
+
+        showPage("dashboard");
+    } catch (err) {
+        console.error("Initialization error:", err);
+    }
+}); 
     const titles = {
         dashboard: "Dashboard",
         instances: "Instances",
