@@ -4,6 +4,9 @@
    REVERT SNAPSHOT MODULE
 ========================================================= */
 
+window.REVERT_SNAPSHOT_MODULE_LOADED = true;
+console.log("[DIAGNOSTIC] revert-snapshot.js loaded and executed successfully.");
+
 const revertModuleState = {
     instances: [],
     volumes: [],
@@ -11,9 +14,6 @@ const revertModuleState = {
     queue: []
 };
 
-/**
- * Load AWS resources (Instances, Volumes, Snapshots) for the Revert page.
- */
 async function loadRevertPageData() {
     const activeAccount = getActiveAccount();
     const sessionAccountEl = document.getElementById("revert-session-account");
@@ -283,12 +283,6 @@ async function executeRevertQueue() {
     }
 }
 
-function resetRevertState() {
-    revertModuleState.queue = [];
-    renderRevertQueue();
-}
-
-// Bind module listeners on DOM load
 document.addEventListener("DOMContentLoaded", () => {
     const instanceSelect = document.getElementById("restore-instance-select") || document.getElementById("revert-instance");
     if (instanceSelect) {
