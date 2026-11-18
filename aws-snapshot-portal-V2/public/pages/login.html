@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>AWS Snapshot Portal - Login</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+            background:
+                linear-gradient(
+                    135deg,
+                    #0f172a,
+                    #1e293b
+                );
+            color: #e5e7eb;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 430px;
+            padding: 24px;
+        }
+
+        .login-card {
+            background: #ffffff;
+            color: #1f2937;
+            border-radius: 14px;
+            padding: 40px 36px;
+            box-shadow:
+                0 25px 60px
+                rgba(0, 0, 0, 0.35);
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 14px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #7c3aed
+                );
+
+            color: white;
+
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        h1 {
+            margin: 0;
+            text-align: center;
+            font-size: 26px;
+            color: #111827;
+        }
+
+        .subtitle {
+            margin-top: 10px;
+            margin-bottom: 30px;
+
+            text-align: center;
+
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .ad-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+
+            border-radius: 10px;
+
+            padding: 18px;
+
+            text-align: center;
+
+            margin-bottom: 24px;
+        }
+
+        .ad-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .ad-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+
+        .ad-description {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .login-button {
+            width: 100%;
+
+            border: 0;
+            border-radius: 8px;
+
+            padding: 13px 16px;
+
+            background: #2563eb;
+            color: white;
+
+            font-size: 15px;
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition:
+                background 0.2s,
+                transform 0.1s;
+        }
+
+        .login-button:hover {
+            background: #1d4ed8;
+        }
+
+        .login-button:active {
+            transform: translateY(1px);
+        }
+
+        .status {
+            display: none;
+
+            margin-top: 18px;
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .status.info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+        }
+
+        .footer {
+            margin-top: 25px;
+
+            text-align: center;
+
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .spinner {
+            display: inline-block;
+
+            width: 15px;
+            height: 15px;
+
+            border: 2px solid
+                rgba(255, 255, 255, 0.4);
+
+            border-top-color: white;
+
+            border-radius: 50%;
+
+            animation:
+                spin 0.7s linear infinite;
+
+            vertical-align: middle;
+
+            margin-right: 7px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="login-wrapper">
+
+        <div class="login-card">
+
+            <div class="logo">
+                AWS
+            </div>
+
+            <h1>
+                AWS Snapshot Portal
+            </h1>
+
+            <div class="subtitle">
+                Secure infrastructure snapshot management
+            </div>
+
+            <div class="ad-box">
+
+                <div class="ad-icon">
+                    🔐
+                </div>
+
+                <div class="ad-title">
+                    Active Directory Login
+                </div>
+
+                <div class="ad-description">
+                    Authentication is handled securely
+                    through your organization's
+                    Active Directory.
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                id="login-button"
+                class="login-button"
+            >
+                Sign in with Active Directory
+            </button>
+
+            <div
+                id="login-status"
+                class="status"
+            ></div>
+
+        </div>
+
+        <div class="footer">
+            Authorized users only
+        </div>
+
+    </div>
+
+
+    <script>
+
+        "use strict";
+
+
+        const loginButton =
+            document.getElementById(
+                "login-button"
+            );
+
+
+        const statusElement =
+            document.getElementById(
+                "login-status"
+            );
+
+
+        function showStatus(
+            message,
+            type = "info"
+        ) {
+
+            statusElement.textContent =
+                message;
+
+            statusElement.className =
+                `status show ${type}`;
+        }
+
+
+        function setLoading(
+            loading
+        ) {
+
+            if (loading) {
+
+                loginButton.disabled =
+                    true;
+
+                loginButton.innerHTML =
+                    `
+                        <span class="spinner"></span>
+                        Authenticating...
+                    `;
+
+            } else {
+
+                loginButton.disabled =
+                    false;
+
+                loginButton.textContent =
+                    "Sign in with Active Directory";
+            }
+        }
+
+
+        async function checkAuthentication() {
+
+            try {
+
+                setLoading(true);
+
+                showStatus(
+                    "Checking your Active Directory credentials...",
+                    "info"
+                );
+
+
+                const response =
+                    await fetch(
+                        "/api/auth/me",
+                        {
+                            method: "GET",
+
+                            credentials:
+                                "same-origin",
+
+                            cache: "no-store"
+                        }
+                    );
+
+
+                if (
+                    response.status ===
+                    401
+                ) {
+
+                    /*
+                     * Apache/PBIS needs to
+                     * authenticate the user.
+                     *
+                     * Reloading the protected
+                     * resource causes Apache to
+                     * initiate authentication.
+                     */
+
+                    window.location.href =
+                        "/";
+
+                    return;
+                }
+
+
+                if (
+                    response.status ===
+                    403
+                ) {
+
+                    setLoading(false);
+
+                    showStatus(
+                        "You are authenticated, but you are not authorized to access the AWS Snapshot Portal.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `Authentication server returned HTTP ${response.status}`
+                    );
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    data.success &&
+                    data.authenticated
+                ) {
+
+                    showStatus(
+                        `Welcome ${data.username}. Redirecting...`,
+                        "info"
+                    );
+
+
+                    setTimeout(
+                        () => {
+
+                            window.location.href =
+                                "/";
+
+                        },
+                        500
+                    );
+
+
+                    return;
+                }
+
+
+                setLoading(false);
+
+                showStatus(
+                    "Authentication was not completed.",
+                    "error"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Authentication error:",
+                    error
+                );
+
+                setLoading(false);
+
+                showStatus(
+                    "Unable to contact the authentication service. Please contact the administrator.",
+                    "error"
+                );
+            }
+        }
+
+
+        loginButton.addEventListener(
+            "click",
+            checkAuthentication
+        );
+
+
+        /*
+         * Automatically check authentication
+         * when the page opens.
+         */
+        document.addEventListener(
+            "DOMContentLoaded",
+            () => {
+
+                checkAuthentication();
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>

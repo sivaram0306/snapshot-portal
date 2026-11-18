@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Snapshot Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="/css/style.css"
+    >
+
+</head>
+
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            AWS Snapshot
+        </div>
+
+        <nav>
+
+            <button
+                class="menu-item"
+                onclick="window.location='/index.html'"
+            >
+                Dashboard
+            </button>
+
+            <button
+                class="menu-item"
+                onclick="window.location='/index.html#instances'"
+            >
+                Instances
+            </button>
+
+            <button
+                class="menu-item"
+                onclick="window.location='/index.html#volumes'"
+            >
+                Volumes
+            </button>
+
+            <button
+                class="menu-item"
+                onclick="window.location='/snapshot-dashboard.html'"
+            >
+                Snapshot Dashboard
+            </button>
+
+            <button
+                class="menu-item"
+                onclick="window.location='/index.html#create-snapshot'"
+            >
+                Create Snapshot
+            </button>
+
+        </nav>
+
+    </aside>
+
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div>
+
+                <h1>
+                    Snapshot Dashboard
+                </h1>
+
+                <span id="lastUpdated">
+                    Loading...
+                </span>
+
+            </div>
+
+            <div>
+
+                <select id="region">
+
+                    <option value="all">
+                        All Regions
+                    </option>
+
+                    <option value="us-west-1">
+                        us-west-1
+                    </option>
+
+                    <option value="us-east-1">
+                        us-east-1
+                    </option>
+
+                    <option value="us-east-2">
+                        us-east-2
+                    </option>
+
+                    <option value="ap-south-1">
+                        ap-south-1
+                    </option>
+
+                    <option value="ap-southeast-1">
+                        ap-southeast-1
+                    </option>
+
+                </select>
+
+                <button
+                    class="primary"
+                    onclick="refreshDashboard()"
+                >
+                    ↻ Refresh
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <div class="content">
+
+
+            <!-- SUMMARY -->
+
+            <div class="cards">
+
+                <div class="card">
+
+                    <span>
+                        Total Snapshots
+                    </span>
+
+                    <strong id="snapshotCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="card">
+
+                    <span>
+                        Completed
+                    </span>
+
+                    <strong
+                        id="completedCount"
+                        class="success-text"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="card">
+
+                    <span>
+                        Pending
+                    </span>
+
+                    <strong
+                        id="pendingCount"
+                        class="warning-text"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="card">
+
+                    <span>
+                        Failed
+                    </span>
+
+                    <strong
+                        id="errorCount"
+                        class="error-text"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="card">
+
+                    <span>
+                        Instances
+                    </span>
+
+                    <strong id="instanceCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="card">
+
+                    <span>
+                        Volumes
+                    </span>
+
+                    <strong id="volumeCount">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- CURRENT JOBS -->
+
+            <div class="page-header">
+
+                <div>
+
+                    <h2>
+                        Snapshot Progress
+                    </h2>
+
+                    <p>
+                        Live snapshot creation status from MySQL.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="jobProgress"
+                class="job-progress"
+            ></div>
+
+
+            <!-- SNAPSHOT TABLE -->
+
+            <div class="page-header">
+
+                <div>
+
+                    <h2>
+                        Snapshot History
+                    </h2>
+
+                </div>
+
+                <div>
+
+                    <select id="statusFilter">
+
+                        <option value="all">
+                            All
+                        </option>
+
+                        <option value="QUEUED">
+                            Queued
+                        </option>
+
+                        <option value="PROCESSING">
+                            Processing
+                        </option>
+
+                        <option value="PENDING">
+                            Pending
+                        </option>
+
+                        <option value="COMPLETED">
+                            Completed
+                        </option>
+
+                        <option value="ERROR">
+                            Error
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="snapshotTable"
+                class="table-wrapper"
+            ></div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script src="/js/snapshot-dashboard.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>Volumes - AWS Snapshot Portal</title>
+
+  <link
+    rel="stylesheet"
+    href="/css/style.css"
+  >
+
+</head>
+
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+
+      <div class="logo-mark">A</div>
+
+      <div>
+        <div class="logo-title">
+          AWS Snapshot
+        </div>
+
+        <div class="logo-subtitle">
+          Management Portal
+        </div>
+      </div>
+
+    </div>
+
+
+    <nav class="menu">
+
+      <a href="/index.html" class="menu-item">
+        <span class="menu-icon">⌂</span>
+        <span class="menu-text">Dashboard</span>
+      </a>
+
+      <a href="/pages/instances.html" class="menu-item">
+        <span class="menu-icon">▣</span>
+        <span class="menu-text">Instances</span>
+      </a>
+
+      <a
+        href="/pages/volumes.html"
+        class="menu-item active"
+      >
+        <span class="menu-icon">▤</span>
+        <span class="menu-text">Volumes</span>
+      </a>
+
+      <a href="/pages/snapshots.html" class="menu-item">
+        <span class="menu-icon">◉</span>
+        <span class="menu-text">Snapshots</span>
+      </a>
+
+      <div class="menu-label">
+        MANAGEMENT
+      </div>
+
+      <a href="/pages/accounts.html" class="menu-item">
+        <span class="menu-icon">☁</span>
+        <span class="menu-text">Accounts</span>
+      </a>
+
+      <a href="/pages/access.html" class="menu-item">
+        <span class="menu-icon">🔑</span>
+        <span class="menu-text">AWS Access</span>
+      </a>
+
+      <a href="/pages/settings.html" class="menu-item">
+        <span class="menu-icon">⚙</span>
+        <span class="menu-text">Settings</span>
+      </a>
+
+    </nav>
+
+
+    <div class="sidebar-footer">
+
+      <div class="connection">
+
+        <span class="connection-dot"></span>
+
+        <span class="connection-text">
+          Disconnected
+        </span>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-title">
+
+        <h1>Volumes</h1>
+
+        <p>
+          EBS volumes attached to EC2 instances
+        </p>
+
+      </div>
+
+
+      <div class="topbar-controls">
+
+        <div class="control">
+
+          <label>Account</label>
+
+          <select id="accountSelect">
+
+            <option value="production">
+              Production
+            </option>
+
+            <option value="development">
+              Development
+            </option>
+
+            <option value="dr">
+              DR
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="control">
+
+          <label>Region</label>
+
+          <select id="regionSelect">
+
+            <option value="ap-south-1">
+              Mumbai
+            </option>
+
+            <option value="ap-southeast-1">
+              Singapore
+            </option>
+
+            <option value="us-east-1">
+              US East
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <div class="content">
+
+      <div class="page-header">
+
+        <div>
+
+          <h2>
+            EBS Volumes
+          </h2>
+
+          <p>
+            Choose an instance to inspect its volumes.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="toolbar">
+
+        <select
+          id="instanceSelect"
+          style="min-width:350px"
+        >
+
+          <option value="">
+            Select an instance
+          </option>
+
+        </select>
+
+
+        <button
+          class="btn btn-primary"
+          onclick="loadVolumes()"
+        >
+          Load Volumes
+        </button>
+
+      </div>
+
+
+      <div class="table">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Volume ID</th>
+              <th>Device</th>
+              <th>Size</th>
+              <th>Type</th>
+              <th>State</th>
+              <th>Encrypted</th>
+              <th>AZ</th>
+              <th></th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="volumeTable">
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<!-- CREATE SNAPSHOT MODAL -->
+
+<div
+  id="snapshotModal"
+  class="modal"
+>
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <h3>
+        Create Snapshot
+      </h3>
+
+      <button
+        class="modal-close"
+        onclick="closeSnapshotModal()"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        Volume
+      </label>
+
+      <input
+        id="snapshotVolume"
+        readonly
+      >
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        Description
+      </label>
+
+      <input
+        id="snapshotDescription"
+        value="Created by AWS Snapshot Portal"
+      >
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        class="btn btn-secondary"
+        onclick="closeSnapshotModal()"
+      >
+        Cancel
+      </button>
+
+      <button
+        class="btn btn-primary"
+        onclick="createSnapshot()"
+      >
+        Create Snapshot
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<div id="toast" class="toast"></div>
+
+
+<script src="/js/common.js"></script>
+<script src="/js/volumes.js"></script>
+
+</body>
+
+</html>
